@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "functions.h"
 #include <Arduino.h>
 
@@ -47,11 +48,11 @@ const int numberToF = 3;                                                        
 Adafruit_VL53L0X ToF[numberToF] = {Adafruit_VL53L0X(), Adafruit_VL53L0X(), Adafruit_VL53L0X()};                         // ToF Sensor objects
 const int xShut[numberToF]      = {14, 34, 32};                                                                         // X_SHUT pins for each ToF sensor
 const int newAddress[numberToF] = {0x01, 0x02, 0x03};                                                                   // Address to be assinged for each ToF sensor
-VL53L0X_RangingMeasurementData_t distancesToF[3];                                                                       // Data type to store the distances measured
+uint16_t distancesToF[3];                                                                                               // Data type to store the distances measured
 
 void setupToF() {
   /*
-  sInitialise and set new address for each ToF sensors
+  Initialise and set new address for each ToF sensors
   */
 
   // Turn off all sensors
@@ -74,6 +75,7 @@ void setupToF() {
       while(true) {}
     }
 
+    ToF[i].startRangeContinuous();
     delay(10);
   }
 }
@@ -109,8 +111,18 @@ void clawIncrement(int position, int stepTime) {
   }
 }
 
+const int touchPins[2] = {2, 3};
 
+void setupTouch() {
+  /*
+    Initialises each touch sensor as an input pullup, to bypass the need for a grounding resistor
+  */
 
+  for(int i=0; i<2; i++) {
+    pinMode(touchPins[i], INPUT_PULLUP);
+  }
+
+}
 
 
 

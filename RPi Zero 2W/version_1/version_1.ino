@@ -15,6 +15,7 @@ void setup() {
   clawServo.attach(clawServoPin);
   clawServo.writeMicroseconds(2500);
   setupToF();
+  setupTouch();
 
   Serial.println("\nWaiting for key press ... ");
   while(Serial.available() == 0) {}
@@ -34,21 +35,19 @@ void loop() {
   else if(programMode == 'g') {
     Serial.print("    Running");
 
-    ToF[0].rangingTest(&distancesToF[0], false);
-    ToF[1].rangingTest(&distancesToF[1], false);
-    ToF[2].rangingTest(&distancesToF[2], false);
+    for(int i=0; i<3; i++) {
+      if(ToF[i].isRangeComplete()) distancesToF[i] = ToF[i].readRange();
+    }
     
-    sprintf(characterBuffer, "    TOF | Front: %d Left: %d Right: %d", distancesToF[0].RangeMilliMeter, distancesToF[1].RangeMilliMeter, distancesToF[2].RangeMilliMeter);
+    sprintf(characterBuffer, "    TOF | Front: %d Left: %d Right: %d", distancesToF[0], distancesToF[1], distancesToF[2]);
     Serial.print(characterBuffer);
   }
 
   else if(programMode == 't') {
     Serial.print("    Testing");
 
-    clawIncrement(500, 1);
-    clawIncrement(1100, 1);
-    clawIncrement(1700, 1);
-    clawIncrement(2500, 1);
+    sprintf(characterBuffer, "    Left: %d | Right: %d", digitalRead(touchPins[0]), digitalRead(touchPins[1]));
+    Serial.print(characterBuffer);
   }
 
   else {
