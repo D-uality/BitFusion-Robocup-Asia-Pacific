@@ -19,7 +19,6 @@ void setup() {
 
   Serial.println("\nWaiting for key press ... ");
   while(Serial.available() == 0) {}
-  Serial.readString();
 }
 
 void loop() {
@@ -35,18 +34,20 @@ void loop() {
   else if(programMode == 'g') {
     Serial.print("    Running");
 
-    for(int i=0; i<3; i++) {
-      if(ToF[i].isRangeComplete()) distancesToF[i] = ToF[i].readRange();
-    }
-    
-    sprintf(characterBuffer, "    TOF | Front: %d Left: %d Right: %d", distancesToF[0], distancesToF[1], distancesToF[2]);
-    Serial.print(characterBuffer);
+    Run(200, 220);
   }
 
   else if(programMode == 't') {
     Serial.print("    Testing");
 
     sprintf(characterBuffer, "    Left: %d | Right: %d", digitalRead(touchPins[0]), digitalRead(touchPins[1]));
+    Serial.print(characterBuffer);
+
+    for(int i=0; i<3; i++) {
+      if(ToF[i].isRangeComplete()) distancesToF[i] = ToF[i].readRange();
+    }
+    
+    sprintf(characterBuffer, "    TOF | Front: %d Left: %d Right: %d", distancesToF[0], distancesToF[1], distancesToF[2]);
     Serial.print(characterBuffer);
   }
 

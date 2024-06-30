@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 Servo driveServos[4];                                                                                                   // Drive servo objects
-const int driveServoPins[4] = {10, 11, 9, 12};                                                                          // Drive servo pins
+const int driveServoPins[4] = {10, 11, 4, 12};                                                                          // Drive servo pins
 
 void setupDriveServos() {
   /* 
@@ -29,10 +29,10 @@ void Run(int v1, int v2, int delayTime=2) {
   v1 = constrain(v1, -1000, 1000);
   v2 = constrain(v2, -1000, 1000);
 
-  driveServos[0].writeMicroseconds(1500 - v1);
-  driveServos[1].writeMicroseconds(1500 - v1);
-  driveServos[2].writeMicroseconds(1500 + v2);
-  driveServos[3].writeMicroseconds(1500 + v2);
+  driveServos[0].writeMicroseconds(1500 + v1);
+  driveServos[1].writeMicroseconds(1500 + v1);
+  driveServos[2].writeMicroseconds(1500 - v2);
+  driveServos[3].writeMicroseconds(1500 - v2);
 
   if(delayTime > 0) {
     delay(delayTime);
@@ -46,7 +46,7 @@ void Run(int v1, int v2, int delayTime=2) {
 
 const int numberToF = 3;                                                                                                // Number of ToF sensors
 Adafruit_VL53L0X ToF[numberToF] = {Adafruit_VL53L0X(), Adafruit_VL53L0X(), Adafruit_VL53L0X()};                         // ToF Sensor objects
-const int xShut[numberToF]      = {14, 34, 32};                                                                         // X_SHUT pins for each ToF sensor
+const int xShut[numberToF]      = {14, 32, 34};                                                                         // X_SHUT pins for each ToF sensor
 const int newAddress[numberToF] = {0x01, 0x02, 0x03};                                                                   // Address to be assinged for each ToF sensor
 uint16_t distancesToF[3];                                                                                               // Data type to store the distances measured
 
