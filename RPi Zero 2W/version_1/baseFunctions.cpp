@@ -5,10 +5,8 @@
 Servo driveServos[4];                                                                                                   // Drive servo objects
 const int driveServoPins[4] = {10, 11, 9, 12};                                                                          // Drive servo pins
 
+/* Initialise, attach, and write stop for all drive servos */
 void setupDriveServos() {
-  /* 
-  Initialise, attach, and write stop for all drive servos
-  */
 
   for(int i=0; i<4; i++) {
     driveServos[i].attach(driveServoPins[i]);
@@ -16,15 +14,15 @@ void setupDriveServos() {
   }
 }
 
-void Run(int v1, int v2, int delayTime=2) {
-  /*
-    Move the robot in a tank configuration
+/*
+  Move the robot in a tank configuration
 
-    Arguments:
-    - v1: the velocity for the left side, mapped to 1000-2000
-    - v2: the velocity for the right side, mapped to 1000-2000
-    - delayTime: the delay, in milliseconds. OPTIONAL
-  */
+  Arguments:
+  - v1: the velocity for the left side, mapped to 1000-2000
+  - v2: the velocity for the right side, mapped to 1000-2000
+  - delayTime: the delay, in milliseconds. OPTIONAL
+*/
+void run(int v1, int v2, int delayTime ) {
 
   if(v1 > 0) v2 = v2 * 1.053 + 1;
   if(v2 < 0) v1 = v1 * 1.053 - 1;
@@ -46,11 +44,8 @@ const int xShut[numberToF]      = {14, 32, 34};                                 
 const int newAddress[numberToF] = {0x01, 0x02, 0x03};                                                                   // Address to be assinged for each ToF sensor
 uint16_t distancesToF[3];                                                                                               // Data type to store the distances measured
 
+/* Initialise and set new address for each ToF sensors */
 void setupToF() {
-  /*
-  Initialise and set new address for each ToF sensors
-  */
-
   // Turn off all sensors
   for(int i=0; i<numberToF; i++) {
     pinMode(xShut[i], OUTPUT);
@@ -79,16 +74,16 @@ void setupToF() {
 Servo clawServo;                                                                                                        // Claw servo object
 const int clawServoPin = 5;                                                                                             // Claw servo pin
 
-void clawIncrement(int position, int stepTime) {
-  /*
-    Moves the claw to a desired position, over a period of time. 
-    This ensures that the claw is not moving at the max velocity, 
-    and hence dropping victims or clashing with anything.
+/*
+  Moves the claw to a desired position, over a period of time. 
+  This ensures that the claw is not moving at the max velocity, 
+  and hence dropping victims or clashing with anything.
 
-    Arguments:
-      - position: the desired PWM wavelength to use, irrelevant to the current wavelength
-      - stepTimeL the time taken for each itteration whilst moving towards the desired target wavelengths
-  */
+  Arguments:
+    - position: the desired PWM wavelength to use, irrelevant to the current wavelength
+    - stepTimeL the time taken for each itteration whilst moving towards the desired target wavelengths
+*/
+void clawIncrement(int position, int stepTime) {
 
   int currentPosition = clawServo.readMicroseconds();
 
@@ -109,10 +104,8 @@ void clawIncrement(int position, int stepTime) {
 
 const int touchPins[2] = {2, 3};
 
+/* Initialises each touch sensor as an input pullup, to bypass the need for a grounding resistor */
 void setupTouch() {
-  /*
-    Initialises each touch sensor as an input pullup, to bypass the need for a grounding resistor
-  */
 
   for(int i=0; i<2; i++) {
     pinMode(touchPins[i], INPUT_PULLUP);
@@ -120,12 +113,14 @@ void setupTouch() {
 
 }
 
+const int colorSensorPins[6] = {A3, A5, A7, A9, A11, A13};                                                              // IR Sensor Pins
 
-
-
-
-
-
+/* Change all pins assoicated with color sensors to being analog inputs */
+void setupColorSensors() {
+  for(int i=0; i<6; i++) {
+    pinMode(colorSensorPins[i], INPUT);
+  }
+}
 
 
 

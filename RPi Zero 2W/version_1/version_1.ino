@@ -1,23 +1,27 @@
 #include "functions.h"
 #include <Arduino.h>
 
-const int ARDIONO_ADDRESS = 11;                                         // The I2C address to appear as for the Rasbperry Pi to establish communications
-byte programMode = 's';                                                 // Current mode that the arduinp is in
-char characterBuffer[100];                                              // Character buffer, used for sprintf()
+const int ARDUINO_ADDRESS = 11;                                                                                         // The I2C address to appear as for the Rasbperry Pi to establish communications
+byte programMode = 's';                                                                                                 // Current mode that the arduinp is in
+char characterBuffer[100];                                                                                              // Character buffer, used for sprintf()
+unsigned long programCount = 0;
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin(ARDIONO_ADDRESS);
+  Wire.begin(ARDUINO_ADDRESS);
 
-  Serial.println("Checkup on all devices ...");
+  Serial.println("\nCheckup on all devices ...");
   
   setupDriveServos();
   clawServo.attach(clawServoPin);
   clawServo.writeMicroseconds(2500);
   setupToF();
   setupTouch();
+  setupColorSensors();
+  readFromEEPROM();
 
   Serial.println("\nWaiting for key press ... ");
+
   while(Serial.available() == 0) {}
 }
 
@@ -27,14 +31,35 @@ void loop() {
 
   if(programMode == 's') {
     Serial.print("    Stopped");
-    Run(0, 0);
+    run(0, 0);
     clawServo.writeMicroseconds(2500);
   }
 
   else if(programMode == 'g') {
     Serial.print("    Running");
 
-    Run(150, 150);
+    running();
+  }
+
+  else if(programMode == 'c') {
+    Serial.print("    Calibrating");
+    resetCalibrationValues();
+
+    Serial.readString();
+    while(Serial.available() == 0) { calibrateColorSensors(); Serial.println(); }
+  }
+
+  else if(programMode == 'w') {
+    Serial.print("    Writing to EEPROM");
+
+    convertToBytes();
+    writeToEEPROM();
+
+    Serial.readString();
+    while(Serial.available() == 0) {}
+
+    readFromEEPROM();
+    programMode = 's';
   }
 
   else if(programMode == 't') {

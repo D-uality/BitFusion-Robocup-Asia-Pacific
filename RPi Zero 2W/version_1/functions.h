@@ -1,17 +1,16 @@
-#include <stdint.h>
 #ifndef FUNCTIONS_H
-
   #define FUNCTIONS_H
 
   #include <Wire.h>
   #include <Servo.h>
   #include <Adafruit_VL53L0X.h>
+  #include <EEPROM.h>
 
   // baseFunctions.cpp
     extern char characterBuffer[100];
 
     void setupDriveServos();
-    void Run(int v1, int v2, int delayTime=2);
+    void run(int v1, int v2, int delayTime=0);
 
     extern Adafruit_VL53L0X ToF[3];
     extern uint16_t distancesToF[3];
@@ -23,5 +22,21 @@
 
     extern const int touchPins[2];
     extern void setupTouch();
+
+    extern const int colorSensorPins[6];
+    extern void setupColorSensors();
+
+  // colorSensor.cpp
+    extern int colourSensorValues[6];
+    extern void resetCalibrationValues();
+    extern void calibrateColorSensors();
+    extern void convertToBytes();
+    extern void writeToEEPROM();
+    extern void readFromEEPROM();
+
+  // running.cpp
+    extern void running();
+    extern void readColorSensors(int mode=0);
+    void PID(int velocity, float kP, float kI, float kD);
 
 #endif
