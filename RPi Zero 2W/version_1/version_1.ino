@@ -34,7 +34,7 @@ void loop() {
   else if(programMode == 'g') {
     Serial.print("    Running");
 
-    Run(200, 220);
+    Run(150, 150);
   }
 
   else if(programMode == 't') {
