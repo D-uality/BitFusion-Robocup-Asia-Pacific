@@ -6,12 +6,20 @@ int colourSensorValues[6];
 int minimumColourSensorValues[6] = {1023, 1023, 1023, 1023, 1023, 1023};
 int maximumColourSensorValues[6] = {0,    0,    0,    0,    0,    0};
 
+/* Reset all calibration values */
 void resetCalibrationValues() {
   for(int i=0; i<6; i++) {
     minimumColourSensorValues[i] = 1023;
     maximumColourSensorValues[i] = 0;
   }
 }
+
+/* 
+  Record the maximum and minimum values that the colour sensors recive.
+  This will be used as mapping information while reading the colour sensor,
+  as we modify the range of the colour sensors into a more appropriate range
+  for different use cases.
+*/
 void calibrateColorSensors() {
 
   for(int i=0; i<6; i++) {
@@ -30,6 +38,11 @@ uint8_t maximumHighByte[6];
 uint8_t minimumLowByte[6];
 uint8_t maximumLowByte[6];
 
+/* 
+  Convert all the extremity values into bytes.
+  Required transformation as analogRead() returns 10bit precision, while
+  the EERPOM only does 8bit values, hence the need for conversion.
+*/
 void convertToBytes() {
   for(int i=0; i<6; i++) {
     minimumHighByte[i] = (minimumColourSensorValues[i] >> 8) & 0xFF; 
@@ -44,6 +57,7 @@ void convertToBytes() {
   Serial.print(characterBuffer);
 }
 
+/* Write all the bytes into the EEPROM, for future reference*/
 void writeToEEPROM() {
   uint8_t byteList[24];
 
@@ -63,6 +77,7 @@ void writeToEEPROM() {
   }
 }
 
+/* Read all the bytes from the EEPROM, to update to the correct calibration settings */
 void readFromEEPROM() {
   for(int i=0; i<6; i++) {
     minimumColourSensorValues[i] = EEPROM.read(i*4    ) * 256 + EEPROM.read(i*4 + 1);
@@ -75,11 +90,17 @@ void readFromEEPROM() {
   Serial.print(characterBuffer);
 }
 
+/*
+  Read all the color sensors, then, map to different ranges:
+  - Line Following: (0 to 100)
+  - Intersections: (0 to 500)
+  - Raw: (0 to 1023)
+*/
 void readColorSensors(int mode) {
   for(int i=0; i<6; i++) {
     colourSensorValues[i] = analogRead(colorSensorPins[i]);
 
-    if     (mode == 0) colourSensorValues[i] = map(colourSensorValues[i], minimumColourSensorValues[i], maximumColourSensorValues[i], 0, 100);
+    if     (mode == 0) colourSensorValues[i] = map(colourSensorValues[i], minimumColourSensorValues[i], maximumColourSensorValues[i], 0, 200);
     else if(mode == 1) colourSensorValues[i] = map(colourSensorValues[i], minimumColourSensorValues[i], maximumColourSensorValues[i], 0, 500);
     else if(mode == 2) colourSensorValues[i] = map(colourSensorValues[i], minimumColourSensorValues[i], maximumColourSensorValues[i], 0, 1023);
   }

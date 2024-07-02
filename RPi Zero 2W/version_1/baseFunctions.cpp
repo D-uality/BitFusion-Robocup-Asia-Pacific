@@ -22,13 +22,15 @@ void setupDriveServos() {
   - v2: the velocity for the right side, mapped to 1000-2000
   - delayTime: the delay, in milliseconds. OPTIONAL
 */
-void run(int v1, int v2, int delayTime ) {
-
+void run(int v1, int v2, int delayTime) {
   if(v1 > 0) v2 = v2 * 1.053 + 1;
   if(v2 < 0) v1 = v1 * 1.053 - 1;
 
   v1 = constrain(v1, -1000, 1000);
   v2 = constrain(v2, -1000, 1000);
+
+  sprintf(characterBuffer, "    v1: %d v2: %d", v1, v2);
+  Serial.print(characterBuffer);
 
   driveServos[0].writeMicroseconds(1500 + v1);
   driveServos[1].writeMicroseconds(1500 + v1);
@@ -121,8 +123,6 @@ void setupColorSensors() {
     pinMode(colorSensorPins[i], INPUT);
   }
 }
-
-
 
 
 
