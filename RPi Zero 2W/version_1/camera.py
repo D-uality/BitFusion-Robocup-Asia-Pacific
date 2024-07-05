@@ -45,43 +45,60 @@ def normaliseImage(image, dilationFactor, blurFactor):
 
   return result, resultNormal
 
+def findVictims(image, dp, minDist, param1, param2, minRadius, maxRadius):
+  circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp, minDist, param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
+
+  if circles is not None:
+    circles = np.round(circles[0, :]).astype("int")
+
+    for (x, y, r) in circles:
+      cv2.circle(image, (x, y), r, (0, 255, 0), 2)
+      cv2.circle(image, (x, y), 1, (0, 0, 255), 3)
+
+  '''
+    If radius is too small, remove
+    If yLevel is too small, remove
+    If different sized circles over two images, remove
+    + Continuous spinning/movement -> changes the image
+    Relativity approach.
+  '''
+
+  return circles, image
+
 try:
   while True:
     start = time.time()
 
     image = Camera.capture_array()
     image = image[100:][:]
-    output = image.copy()
     greyImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     cv2.imshow("Image", image);
+    cv2.moveWindow("Image", 700, 50)
     # cv2.imshow("Grey", greyImage)
 
-    differenceImage, normalImage = normaliseImage(greyImage, 3, 31)
-    
+    # differenceImage, normalImage = normaliseImage(greyImage, 11, 31)
     # cv2.imshow("Difference Image", differenceImage)
     # cv2.imshow("Normalised Image", normalImage)
-    
-    dp = 1.1                            # Inverse ratio of the accumulator resolution to the image resolution
-    minDist = 50                        # Minimum distance between the centers of detected circles
-    param1 = 100                        # Upper threshold for the internal Canny edge detector
-    param2 = 30                         # Threshold for center detection
-    minRadius = 4                       # Minimum radius of the circles to be detected
-    maxRadius = 100                      # Maximum radius of the circles to be detected
 
-    circles = cv2.HoughCircles(normalImage, cv2.HOUGH_GRADIENT, dp, minDist, param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
+    circles, circleImage = findVictims(greyImage, 1, 100, 100, 15, 4, 100)
 
-    if circles is not None:
-      circles = np.round(circles[0, :]).astype("int")
-            
-      for (x, y, r) in circles:
-        cv2.circle(output, (x, y), r, (0, 255, 0), 2)
-        cv2.circle(output, (x, y), 1, (0, 0, 255), 3)
-        cv2.imshow("Detected Circles", output)
-    else:
-      print("No circle detected")
+    cv2.imshow("Circles", circleImage)
+    cv2.moveWindow("Circles", 700, 500)
 
-    print(f"{(1 / (time.time() - start)):.2f} FPS")
+    image2 = Camera.capture_array()
+    image2 = image2[100:][:]
+    greyImage2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+
+    cv2.imshow("Image2", image2);
+    cv2.moveWindow("Image2", 1300, 50)
+
+    circles2, circleImage2 = findVictims(greyImage2, 1, 100, 100, 15, 4, 100)
+
+    cv2.imshow("Circles2", circleImage2)
+    cv2.moveWindow("Circles2", 1300, 500)
+
+    print(f"{(1 / (time.time() - start)):.2f} fps")
 
 except KeyboardInterrupt:
   print("Program stopped!");
