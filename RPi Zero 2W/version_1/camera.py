@@ -1,17 +1,28 @@
 import cv2
 import numpy as np
 from picamera2 import Picamera2, Preview
-from libcamera import Transform
+from libcamera import Transform, controls
 import time
 
 WIDTH  = 480
 HEIGHT = 480
 
-Camera = Picamera2()
-Configuration = Camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=1, hflip=1))
-Camera.configure(Configuration)
-Camera.start()
+camera = Picamera2()
+Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=1, hflip=1))
+camera.configure(Configuration)
+camera.start()
+camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
 cv2.startWindowThread()
+
+def removeSpectralHighlights(image, kernalSize):
+  mask = cv2.inRange(image, (200, 200, 200), (255, 255, 255))
+  
+  kernel = np.ones((kernalSize, kernalSize), np.uint8)
+  mask = cv2.dilate(mask, kernel, iterations=1)
+  
+  image = cv2.inpaint(image, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
+
+  return image
 
 def normaliseImage(image, dilationFactor, blurFactor):
   '''
@@ -50,55 +61,46 @@ def findVictims(image, dp, minDist, param1, param2, minRadius, maxRadius):
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")
+    circles = validateVictims(circles)
 
     for (x, y, r) in circles:
-      cv2.circle(image, (x, y), r, (0, 255, 0), 2)
-      cv2.circle(image, (x, y), 1, (0, 0, 255), 3)
+      cv2.circle(image, (x, y), r, (0, 255, 0), 1)
+      cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
+  else:
+    circles = [(0, 0, 0)]
 
-  '''
-    If radius is too small, remove
-    If yLevel is too small, remove
-    If different sized circles over two images, remove
-    + Continuous spinning/movement -> changes the image
-    Relativity approach.
-  '''
-
+  print(circles, end="    ")
   return circles, image
+
+previousCircles = []
+
+def validateVictims(circles):
+  approvedCircles = []
+
+  for (x, y, r) in circles:
+    if y > 30: approvedCircles.append((x, y, r))
+
+  return approvedCircles
 
 try:
   while True:
     start = time.time()
 
-    image = Camera.capture_array()
-    image = image[100:][:]
-    greyImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image = camera.capture_array()
+    highlighlessImage = removeSpectralHighlights(image, 7)
+    grayImage = cv2.cvtColor(highlighlessImage, cv2.COLOR_RGB2GRAY)
+    circles, _ = findVictims(grayImage, 1, 200, 100, 20, 30, 100)
 
-    cv2.imshow("Image", image);
-    cv2.moveWindow("Image", 700, 50)
-    # cv2.imshow("Grey", greyImage)
+    cv2.imshow("Image", image)
+    cv2.imshow("Highlightless", highlighlessImage)
+    cv2.imshow("Gray", grayImage)
+    cv2.moveWindow("Image", 500, 0)
+    cv2.moveWindow("Highlightless", 500, 480)
+    cv2.moveWindow("Gray", 980, 0)
 
-    # differenceImage, normalImage = normaliseImage(greyImage, 11, 31)
-    # cv2.imshow("Difference Image", differenceImage)
-    # cv2.imshow("Normalised Image", normalImage)
+    previousCircles = circles
 
-    circles, circleImage = findVictims(greyImage, 1, 100, 100, 15, 4, 100)
-
-    cv2.imshow("Circles", circleImage)
-    cv2.moveWindow("Circles", 700, 500)
-
-    image2 = Camera.capture_array()
-    image2 = image2[100:][:]
-    greyImage2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
-
-    cv2.imshow("Image2", image2);
-    cv2.moveWindow("Image2", 1300, 50)
-
-    circles2, circleImage2 = findVictims(greyImage2, 1, 100, 100, 15, 4, 100)
-
-    cv2.imshow("Circles2", circleImage2)
-    cv2.moveWindow("Circles2", 1300, 500)
-
-    print(f"{(1 / (time.time() - start)):.2f} fps")
+    print(f"{(1/(time.time()-start)):.2f} pc/s")
 
 except KeyboardInterrupt:
   print("Program stopped!");
