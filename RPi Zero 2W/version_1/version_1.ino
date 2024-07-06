@@ -62,8 +62,8 @@ void loop() {
     programMode = 's';
   }
 
-  else if(programMode == 't') {
-    Serial.print("    Testing");
+  else if(programMode == 'r') {
+    Serial.print("    Reading");
 
     sprintf(characterBuffer, "    Left: %d | Right: %d", digitalRead(touchPins[0]), digitalRead(touchPins[1]));
     Serial.print(characterBuffer);
@@ -74,6 +74,8 @@ void loop() {
     
     sprintf(characterBuffer, "    TOF | Front: %d Left: %d Right: %d", distancesToF[0], distancesToF[1], distancesToF[2]);
     Serial.print(characterBuffer);
+
+    readColorSensors();
   }
 
   else {

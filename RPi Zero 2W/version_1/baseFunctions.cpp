@@ -7,7 +7,6 @@ const int driveServoPins[4] = {10, 11, 9, 12};                                  
 
 /* Initialise, attach, and write stop for all drive servos */
 void setupDriveServos() {
-
   for(int i=0; i<4; i++) {
     driveServos[i].attach(driveServoPins[i]);
     driveServos[i].writeMicroseconds(1500);
@@ -43,7 +42,7 @@ void run(int v1, int v2, int delayTime) {
 const int numberToF = 3;                                                                                                // Number of ToF sensors
 Adafruit_VL53L0X ToF[numberToF] = {Adafruit_VL53L0X(), Adafruit_VL53L0X(), Adafruit_VL53L0X()};                         // ToF Sensor objects
 const int xShut[numberToF]      = {14, 32, 34};                                                                         // X_SHUT pins for each ToF sensor
-const int newAddress[numberToF] = {0x01, 0x02, 0x03};                                                                   // Address to be assinged for each ToF sensor
+const int newAddress[numberToF] = {0x08, 0x09, 0x0a};                                                                   // Address to be assinged for each ToF sensor
 uint16_t distancesToF[3];                                                                                               // Data type to store the distances measured
 
 /* Initialise and set new address for each ToF sensors */
@@ -108,11 +107,7 @@ const int touchPins[2] = {2, 3};
 
 /* Initialises each touch sensor as an input pullup, to bypass the need for a grounding resistor */
 void setupTouch() {
-
-  for(int i=0; i<2; i++) {
-    pinMode(touchPins[i], INPUT_PULLUP);
-  }
-
+  for(int i=0; i<2; i++) { pinMode(touchPins[i], INPUT_PULLUP); }
 }
 
 const int colorSensorPins[6] = {A3, A5, A7, A9, A11, A13};                                                              // IR Sensor Pins
