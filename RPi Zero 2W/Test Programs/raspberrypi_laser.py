@@ -14,9 +14,9 @@ for address in sensor_addresses:
 while True:
   for i, sensor in enumerate(sensors):
     distance = sensor.range
-    print(f"Sensor {i+1} (Address: {sensor_addresses[i]}) distance: {distance} mm")
-  time.sleep(1)
-
+    print(f"Sensor {i+1} (Address: {sensor_addresses[i]}) distance: {distance} mm", end="    ")
+  
+  print()
 
 '''
   Hence, the need to create a distance vs radius cutout, graphing using desmos
