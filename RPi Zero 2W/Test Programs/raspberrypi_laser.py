@@ -20,4 +20,6 @@ while True:
 
 '''
   Hence, the need to create a distance vs radius cutout, graphing using desmos
+
+  nvm, seems to be requiring different version of numpy, conflicting with camera and opencv ...
 '''
