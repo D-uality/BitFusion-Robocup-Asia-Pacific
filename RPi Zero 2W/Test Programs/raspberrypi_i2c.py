@@ -20,6 +20,6 @@ def main():
         print("Sending Data: Hello Arduino!");
         bus.write_i2c_block_data(ARDUINO_ADDRESS, 0, convertStringToBytes("Hello Arduino!"))
 
-        time.sleep(0.5);
+        time.sleep(2);
 
 main()

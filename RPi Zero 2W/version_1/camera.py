@@ -108,10 +108,22 @@ def convertStringToBytes(message):
   return list(map(ord, message))
 
 def transmitData(circles):
+  currentTries, maximumTries = 0, 5
   maxRadius = max(circles, key=lambda x: x[2])
   data = str(maxRadius[0]) + "," + str(maxRadius[1]) + "," + str(maxRadius[2])
-  bus.write_i2c_block_data(ARDUINO_ADDRESS, 0, convertStringToBytes(data))
   print(data, end="    ")
+
+  while currentTries < maximumTries:
+    try:
+      bus.write_i2c_block_data(ARDUINO_ADDRESS, 0, convertStringToBytes(data))
+      print("    Data sent successfully!", end="    ")
+      return True
+    except IOError:
+      print("    Data failure! Retrying...")
+      time.sleep(0.1)
+      currentTries += 1
+
+  return False
 
   '''
     Program keeps crashing
@@ -128,7 +140,7 @@ try:
     image = image[100:][:]
     highlighlessImage = removeSpectralHighlights(image, 7)
     circles, circleImage = findVictims(highlighlessImage, 1, 100, 100, 20, 30, 100)
-    matchingCircles, matchingImage = matchVictims(circles, 25, highlighlessImage)
+    matchingCircles, matchingImage = matchVictims(circles, 80, highlighlessImage)
 
     transmitData(matchingCircles)
 
