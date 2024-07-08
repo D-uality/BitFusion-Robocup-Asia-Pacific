@@ -1,14 +1,29 @@
 #include "functions.h"
 #include <Arduino.h>
 
-const int ARDUINO_ADDRESS = 11;                                                                                         // The I2C address to appear as for the Rasbperry Pi to establish communications
+const int ARDUINO_ADDRESS = 0x0b;                                                                                         // The I2C address to appear as for the Rasbperry Pi to establish communications
 byte programMode = 's';                                                                                                 // Current mode that the arduinp is in
 char characterBuffer[100];                                                                                              // Character buffer, used for sprintf()
 unsigned long programCount = 0;
+String data;
+
+void receiveEvent(int size) {
+  Serial.println("Received Data!");
+  String data = "";
+
+  while(Wire.available() > 0) {
+    char character = Wire.read();
+    data += character;
+  }
+
+  Serial.print("\t");
+  Serial.println(data);
+}
 
 void setup() {
   Serial.begin(115200);
   Wire.begin(ARDUINO_ADDRESS);
+  Wire.onReceive(receiveEvent);
 
   Serial.println("\nCheckup on all devices ...");
   
@@ -21,7 +36,6 @@ void setup() {
   readFromEEPROM();
 
   Serial.println("\nWaiting for key press ... ");
-
   while(Serial.available() == 0) {}
 }
 
@@ -78,11 +92,14 @@ void loop() {
     readColorSensors();
   }
 
+  else if(programMode == 'd') {
+    Serial.print(Wire.available());
+  }
+
   else {
     Serial.print("Unrecognised!");
     programMode = 's';
   }
 
   Serial.println();
-  delay(1);
 }
