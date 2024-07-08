@@ -6,24 +6,27 @@ byte programMode = 's';                                                         
 char characterBuffer[100];                                                                                              // Character buffer, used for sprintf()
 unsigned long programCount = 0;
 String data;
+int x, y, r;
 
 void receiveEvent(int size) {
   Serial.println("Received Data!");
-  String data = "";
+  data = "";
 
   while(Wire.available() > 0) {
     char character = Wire.read();
     data += character;
   }
 
+  data.remove(0, 1);
+
   Serial.print("\t");
   Serial.println(data);
+
+  splitData();
 }
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin(ARDUINO_ADDRESS);
-  Wire.onReceive(receiveEvent);
 
   Serial.println("\nCheckup on all devices ...");
   
@@ -37,6 +40,9 @@ void setup() {
 
   Serial.println("\nWaiting for key press ... ");
   while(Serial.available() == 0) {}
+
+  Wire.begin(ARDUINO_ADDRESS);
+  Wire.onReceive(receiveEvent);
 }
 
 void loop() {
@@ -58,7 +64,7 @@ void loop() {
   else if(programMode == 'c') {
     Serial.print("    Calibrating");
     resetCalibrationValues();
-
+    run(0, 0);
     Serial.readString();
     while(Serial.available() == 0) { calibrateColorSensors(); Serial.println(); }
   }
@@ -92,8 +98,10 @@ void loop() {
     readColorSensors();
   }
 
-  else if(programMode == 'd') {
-    Serial.print(Wire.available());
+  else if(programMode == 'e') {
+    Serial.print("    Evacuation");
+
+    evacuation();
   }
 
   else {
