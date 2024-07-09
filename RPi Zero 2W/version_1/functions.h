@@ -6,6 +6,10 @@
   #include <Adafruit_VL53L0X.h>
   #include <EEPROM.h>
 
+  // version_1.ino
+    extern String data;
+    extern int x, y, r;
+
   // baseFunctions.cpp
     extern char characterBuffer[100];
 
@@ -38,5 +42,9 @@
     extern void running();
     extern void readColorSensors(int mode=0);
     void PID(int velocity, float kP, float kI, float kD);
+
+  // evacuationZone.cpp
+    extern void evacuation();
+    void splitData();
 
 #endif
