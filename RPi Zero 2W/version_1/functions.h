@@ -8,7 +8,7 @@
 
   // version_1.ino
     extern String data;
-    extern int x, y, r;
+    extern int x, y, r, greenX, greenY, redX, redY;
 
   // baseFunctions.cpp
     extern char characterBuffer[100];

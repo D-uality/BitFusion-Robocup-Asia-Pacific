@@ -6,7 +6,7 @@ byte programMode = 's';                                                         
 char characterBuffer[100];                                                                                              // Character buffer, used for sprintf()
 unsigned long programCount = 0;
 String data;
-int x, y, r;
+int x, y, r, greenX, greenY, redX, redY;
 
 void receiveEvent(int size) {
   Serial.println("Received Data!");
@@ -27,7 +27,7 @@ void receiveEvent(int size) {
 
 void setup() {
   Serial.begin(115200);
-
+  randomSeed(analogRead(A0));
   Serial.println("\nCheckup on all devices ...");
   
   setupDriveServos();
@@ -37,12 +37,12 @@ void setup() {
   setupTouch();
   setupColorSensors();
   readFromEEPROM();
+  Wire.begin(ARDUINO_ADDRESS);
+  Wire.onReceive(receiveEvent);
 
   Serial.println("\nWaiting for key press ... ");
   while(Serial.available() == 0) {}
 
-  Wire.begin(ARDUINO_ADDRESS);
-  Wire.onReceive(receiveEvent);
 }
 
 void loop() {
