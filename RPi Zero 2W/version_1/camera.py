@@ -21,7 +21,7 @@ cv2.startWindowThread()
 bus = smbus.SMBus(1)
 
 def removeSpectralHighlights(image, kernalSize):
-  mask = cv2.inRange(image, (200, 200, 200), (255, 255, 255))
+  mask = cv2.inRange(image, (180, 180, 180), (255, 255, 255))
   
   kernel = np.ones((kernalSize, kernalSize), np.uint8)
   mask = cv2.dilate(mask, kernel, iterations=1)
@@ -92,7 +92,7 @@ def matchVictims(circles, tolorance, image):
 
   for (x1, y1, r1) in circles:
     for (x2, y2, r2) in previousCircles:
-      delta = abs(x1 - x2) * 2 + abs(y1 -y2) * 2 + abs(r1 - r2) 
+      delta = abs(x1 - x2) * 1 + abs(y1 -y2) * 2 + abs(r1 - r2) 
       if delta < tolorance:
         approvedCircles.append((x1, y1, r1))
         cv2.circle(output, (x1, y1), r1, (0, 255, 0), 1)
@@ -107,10 +107,42 @@ previousCircles = [(0, 0, 0)]
 def convertStringToBytes(message):
   return list(map(ord, message))
 
-def transmitData(circles):
+def findTriangles(image):
+  output = image.copy()
+  imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+
+  green = cv2.inRange(imageHSL, (0, 0, 90), (360, 360, 150))
+  greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+  maxGreenArea = 0
+  largestGreenContour = None
+  greenTotalX, greenTotalY = 0, 0
+  greenX, greenY, greenTotalPoint = 0, 0, 0
+
+  for greenContour in greenContours:
+    greenArea = cv2.contourArea(greenContour)
+    if greenArea > maxGreenArea and greenArea > 3000:
+      maxGreenArea = greenArea
+      largestGreenContour = greenContour
+
+  if largestGreenContour is not None:
+    cv2.drawContours(output, largestGreenContour, -1, (255, 0, 0), 2)
+
+    for point in largestGreenContour:
+      greenTotalX += point[0][0]
+      greenTotalY += point[0][1]
+      greenTotalPoint += 1
+
+    greenX = int(greenTotalX / greenTotalPoint)
+    greenY = int(greenTotalY / greenTotalPoint)
+
+  return output, greenX, greenY
+
+def transmitData(circles, greenX, greenY):
   currentTries, maximumTries = 0, 5
   maxRadius = max(circles, key=lambda x: x[2])
-  data = str(maxRadius[0]) + "," + str(maxRadius[1]) + "," + str(maxRadius[2])
+
+  data = str(maxRadius[0]) + "," + str(maxRadius[1]) + "," + str(maxRadius[2]) + "," + str(greenX) + "," + str(greenY)
   print(data, end="    ")
 
   while currentTries < maximumTries:
@@ -120,17 +152,9 @@ def transmitData(circles):
       return True
     except IOError:
       print("    Data failure! Retrying...")
-      time.sleep(0.1)
+      time.sleep(0.05)
       currentTries += 1
-
-  return False
-
-  '''
-    Program keeps crashing
-    - Implement retry logic with try ... except ...
-    - Following a number of attemps
-    - May be because arduino is busy?
-  '''
+  exit()
 
 try:
   while True:
@@ -142,16 +166,20 @@ try:
     circles, circleImage = findVictims(highlighlessImage, 1, 100, 100, 20, 30, 100)
     matchingCircles, matchingImage = matchVictims(circles, 80, highlighlessImage)
 
-    transmitData(matchingCircles)
+    triangles, greenX, greenY = findTriangles(highlighlessImage)
+
+    transmitData(matchingCircles, greenX, greenY)
 
     cv2.imshow("Image", image)
     cv2.imshow("Highlightless", highlighlessImage)
     cv2.imshow("Circles", circleImage)
     cv2.imshow("Matching", matchingImage)
+    cv2.imshow("Triangles", triangles)
     cv2.moveWindow("Image", 500, 0)
-    cv2.moveWindow("Highlightless", 500, 480)
+    cv2.moveWindow("Highlightless", 500, 380)
     cv2.moveWindow("Circles", 980, 0)
-    cv2.moveWindow("Matching", 980, 480)
+    cv2.moveWindow("Matching", 980, 380)
+    cv2.moveWindow("Triangles", 1460, 0)
 
     previousCircles = circles
 
