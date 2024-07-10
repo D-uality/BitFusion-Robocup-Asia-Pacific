@@ -47,4 +47,6 @@
     extern void evacuation();
     void splitData();
 
+    extern bool grabbed;
+
 #endif

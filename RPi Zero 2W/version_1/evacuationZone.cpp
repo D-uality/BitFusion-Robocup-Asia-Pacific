@@ -25,14 +25,13 @@ void splitData() {
   Serial.print(characterBuffer);
 }
 
-void evacuation() {
-  Serial.readString();
+void findVictim() {
   while(r == 0) {
     if(Serial.available() > 0) { break; Serial.readString(); }
     run(150, 150);
 
-    sprintf(characterBuffer, "    x: %d y: %d r: %d", x, y, r);
-    Serial.print(characterBuffer);
+    Serial.print("    ");
+    Serial.print(data);
 
     if(digitalRead(touchPins[0]) == 0 || digitalRead(touchPins[1]) == 0) {
       run(-150, -150, 700);
@@ -41,40 +40,94 @@ void evacuation() {
 
     Serial.println();
   }
+}
 
-  run(0, 0, 500);
-
-  while(r > 70) {
-    run(-100, -100);
-  }
-
-  while(r < 90) {
+void approachVictim(float kP) {
+  while(r < 90 && r != 0) {
     if(Serial.available() > 0) { break; Serial.readString(); }
     int error = x - 250;
-    int turn = error * 0.5;
+    int turn = error * kP;
     turn = constrain(turn, -30, 30);
 
-    sprintf(characterBuffer, "    %d | %d %d", error, 150 + turn, 150 - turn);
-    Serial.println(characterBuffer);
+    sprintf(characterBuffer, "    %d | %d %d    ", error, 150 + turn, 150 - turn);
+    Serial.print(characterBuffer);
+    Serial.print(data);
 
     run(100 + turn, 100 - turn);
-  }
-  
-  run(0, 0, 500);
-  clawServo.writeMicroseconds(500);
-  delay(1000);
-  run(100, 100, 3500);
-  run(0, 0);
-  clawIncrement(1200, 1);
-  run(-100, -100, 1000);
-  run(0, 0);
-  clawIncrement(1400, 2);
 
-  while(Serial.available() == 0) { }
+    Serial.println();
+  }
+}
+
+void grabSequence() {
+  if(r > 85) {
+    run(0, 0, 500);
+    clawIncrement(500, 1);
+
+    run(100, 100, 3800);
+    run(0, 0);
+
+    clawIncrement(1200, 1);
+    run(-100, -100, 3000);
+    run(0, 0);
+
+    clawIncrement(800, 1);
+    delay(50);
+    clawIncrement(1200, 1);
+    delay(50);
+
+    clawIncrement(1800, 2);
+
+    grabbed = true;
+  }
+}
+
+void findTriangle() {
+  if(grabbed == true) {
+    delay(3000);
+    while(greenX == 0) {
+      run(150, -150);
+    }
+
+    while(greenX > 240) {
+      run(100, -100);
+    }
+
+    while(digitalRead(touchPins[0]) == 1 || digitalRead(touchPins[1]) == 1) {
+      run(150, 150);
+    }
+
+    run(150, 150, 300);
+    run(-150, -150, 500);
+    run(0, 0);
+
+    clawIncrement(1300, 1);
+    delay(500);
+    clawIncrement(2500, 1);
+    run(0, 0, 5000);
+
+    grabbed = false;
+  }
+}
+
+bool grabbed = false;
+
+void evacuation() {
   Serial.readString();
 
-  clawServo.writeMicroseconds(2500);
+  while(Serial.available() == 0) {
+    findVictim();
 
-  sprintf(characterBuffer, "    x: %d y: %d r: %d", x, y, r);
-  Serial.print(characterBuffer);
+    run(0, 0, 500);
+
+    while(r > 70 && r != 0) {
+      run(-100, -100);
+    }
+
+    approachVictim(0.5);
+    grabSequence();
+    findTriangle();
+  }
+
+  clawServo.writeMicroseconds(2500);
 }
