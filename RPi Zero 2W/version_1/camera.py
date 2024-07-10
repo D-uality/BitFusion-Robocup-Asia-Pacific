@@ -113,11 +113,13 @@ def findTriangles(image):
 
   green = cv2.inRange(imageHSL, (0, 0, 90), (360, 360, 150))
   greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+  red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 240))
+  redContours, _ = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-  maxGreenArea = 0
-  largestGreenContour = None
-  greenTotalX, greenTotalY = 0, 0
-  greenX, greenY, greenTotalPoint = 0, 0, 0
+  maxGreenArea, maxRedArea = 0, 0
+  largestGreenContour, largestRedContour = None, None
+  greenTotalX, greenTotalY, redTotalX, redTotalY = 0, 0, 0, 0
+  greenX, greenY, greenTotalPoint, redX, redY, redTotalPoint = 0, 0, 0, 0, 0, 0
 
   for greenContour in greenContours:
     greenArea = cv2.contourArea(greenContour)
@@ -136,13 +138,30 @@ def findTriangles(image):
     greenX = int(greenTotalX / greenTotalPoint)
     greenY = int(greenTotalY / greenTotalPoint)
 
-  return output, greenX, greenY
+  for redContour in redContours:
+    redArea = cv2.contourArea(redContour)
+    if redArea > maxRedArea and redArea > 3000:
+      maxRedArea = redArea
+      largestRedContour = redContour
 
-def transmitData(circles, greenX, greenY):
-  currentTries, maximumTries = 0, 5
+  if largestRedContour is not None:
+    cv2.drawContours(output, largestRedContour, -1, (0, 255, 0), 2)
+
+    for point in largestRedContour:
+      redTotalX += point[0][0]
+      redTotalY += point[0][1]
+      redTotalPoint += 1
+
+    redX = int(redTotalX / redTotalPoint)
+    redY = int(redTotalY / redTotalPoint)
+
+  return output, greenX, greenY, redX, redY
+
+def transmitData(circles, greenX, greenY, redX, redY):
+  currentTries, maximumTries = 0, 7
   maxRadius = max(circles, key=lambda x: x[2])
 
-  data = str(maxRadius[0]) + "," + str(maxRadius[1]) + "," + str(maxRadius[2]) + "," + str(greenX) + "," + str(greenY)
+  data = str(maxRadius[0]) + "," + str(maxRadius[1]) + "," + str(maxRadius[2]) + "," + str(greenX) + "," + str(greenY) + "," + str(redX) + "," + str(redY)
   print(data, end="    ")
 
   while currentTries < maximumTries:
@@ -152,7 +171,7 @@ def transmitData(circles, greenX, greenY):
       return True
     except IOError:
       print("    Data failure! Retrying...")
-      time.sleep(0.05)
+      time.sleep(0.1)
       currentTries += 1
   exit()
 
@@ -166,9 +185,8 @@ try:
     circles, circleImage = findVictims(highlighlessImage, 1, 100, 100, 20, 30, 100)
     matchingCircles, matchingImage = matchVictims(circles, 80, highlighlessImage)
 
-    triangles, greenX, greenY = findTriangles(highlighlessImage)
-
-    transmitData(matchingCircles, greenX, greenY)
+    triangles, greenX, greenY, redX, redY = findTriangles(highlighlessImage)
+    transmitData(matchingCircles, greenX, greenY, redX, redY)
 
     cv2.imshow("Image", image)
     cv2.imshow("Highlightless", highlighlessImage)

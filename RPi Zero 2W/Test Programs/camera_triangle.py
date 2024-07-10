@@ -21,10 +21,10 @@ def findTriangles(image):
   imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
 
   cv2.circle(image, (240, 240), 1, (0, 255, 0), 2)
-  print(imageHSL[240][240], end="    ")
+  print(imageHSL[240][240])
   cv2.imshow("hsl", imageHSL)
 
-  green = cv2.inRange(imageHSL, (0, 0, 90), (360, 360, 150))
+  green = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 240))
   contours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
   maxArea = 0
