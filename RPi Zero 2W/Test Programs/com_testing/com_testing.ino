@@ -6,11 +6,14 @@ void setup() {
 }
 
 void loop() {
-  String data = "_";
+  String data;
 
   while(com.available() > 0) {
-    data += com.read();
+    char character = com.read();
+    data += character;
   }
 
-  Serial.print(data);
+  if(data.length() != 0) Serial.println(data);
+
+  delay(50); // Needs fine tuning, to recieve whole messages
 }
