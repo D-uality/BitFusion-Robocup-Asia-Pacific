@@ -4,10 +4,9 @@ from picamera2 import Picamera2, Preview
 from libcamera import Transform, controls
 import time
 import sys
-import smbus2 as smbus
+import serial
 import time
 
-ARDUINO_ADDRESS = 0x0b;
 WIDTH  = 480
 HEIGHT = 480
 
@@ -18,7 +17,7 @@ camera.start()
 camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
 cv2.startWindowThread()
 
-bus = smbus.SMBus(1)
+com = serial.Serial('/dev/ttyS0', 115200, timeout=1)
 
 def removeSpectralHighlights(image, kernalSize):
   mask = cv2.inRange(image, (180, 180, 180), (255, 255, 255))
@@ -166,7 +165,7 @@ def transmitData(circles, greenX, greenY, redX, redY):
 
   while currentTries < maximumTries:
     try:
-      bus.write_i2c_block_data(ARDUINO_ADDRESS, 0, convertStringToBytes(data))
+      com.write(convertStringToBytes(data))
       print("    Data sent successfully!", end="    ")
       return True
     except IOError:
@@ -181,8 +180,8 @@ try:
 
     image = camera.capture_array()
     image = image[100:][:]
-    highlighlessImage = removeSpectralHighlights(image, 7)
-    circles, circleImage = findVictims(highlighlessImage, 1, 100, 100, 20, 30, 100)
+    highlighlessImage = removeSpectralHighlights(image, 7 )
+    circles, circleImage = findVictims(highlighlessImage, 1, 100, 100, 20, 40, 100)
     matchingCircles, matchingImage = matchVictims(circles, 80, highlighlessImage)
 
     triangles, greenX, greenY, redX, redY = findTriangles(highlighlessImage)
