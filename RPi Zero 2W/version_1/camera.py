@@ -6,6 +6,7 @@ import time
 import sys
 import serial
 import time
+from camera_helper import *
 
 WIDTH  = 480
 HEIGHT = 480
@@ -27,38 +28,6 @@ def removeSpectralHighlights(image, kernalSize):
   
   image = cv2.inpaint(image, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
   return image
-
-def normaliseImage(image, dilationFactor, blurFactor):
-  '''
-  Normalise each image on all three axis, RGB.
-
-  Arguments:
-  - image: Numpy matrix that contains the image to be normalised
-  - dilationFactor: Dilation kernal size
-  - blurFactor: Blur kernal size
-
-  Returns:
-  - result: Processed image that is subtracted from the maximum (conserves darker/lighter spots)
-  - resultNormalised: Processed image that is also normalised (maximises differences)
-  '''
-
-  rgbPlanes = cv2.split(image)
-  resultantPlanes = []
-  resultantNormalPlanes = []
-
-  for plane in rgbPlanes:
-    dilatedImage = cv2.dilate(plane, np.ones((dilationFactor, dilationFactor), np.uint8))
-    backgroundImage = cv2.medianBlur(dilatedImage, blurFactor)
-
-    planeDifference = 255 - cv2.absdiff(plane, backgroundImage)
-    normalisedPlane = cv2.normalize(planeDifference, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
-    resultantPlanes.append(planeDifference)
-    resultantNormalPlanes.append(normalisedPlane)
-
-  result = cv2.merge(resultantPlanes)
-  resultNormal = cv2.merge(resultantNormalPlanes)
-
-  return result, resultNormal
 
 def findVictims(image, dp, minDist, param1, param2, minRadius, maxRadius):
   output = image.copy()
@@ -99,7 +68,10 @@ def matchVictims(circles, tolorance, image):
 
   if len(approvedCircles) == 0:
     approvedCircles.append((0, 0, 0))
-  return approvedCircles, output
+  
+  maxRadiusCircle = max(approvedCircles, key=lambda x: x[2])
+
+  return maxRadiusCircle, output
 
 previousCircles = [(0, 0, 0)]
 
@@ -112,7 +84,7 @@ def findTriangles(image):
 
   green = cv2.inRange(imageHSL, (0, 0, 90), (360, 360, 150))
   greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-  red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 240))
+  red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
   redContours, _ = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
   maxGreenArea, maxRedArea = 0, 0
@@ -156,11 +128,10 @@ def findTriangles(image):
 
   return output, greenX, greenY, redX, redY
 
-def transmitData(circles, greenX, greenY, redX, redY):
+def transmitData(circle, greenX, greenY, redX, redY, victimType):
   currentTries, maximumTries = 0, 7
-  maxRadius = max(circles, key=lambda x: x[2])
 
-  data = str(maxRadius[0]) + "," + str(maxRadius[1]) + "," + str(maxRadius[2]) + "," + str(greenX) + "," + str(greenY) + "," + str(redX) + "," + str(redY)
+  data = str(circle[0]) + "," + str(circle[1]) + "," + str(circle[2]) + "," + str(greenX) + "," + str(greenY) + "," + str(redX) + "," + str(redY) + "," + str(victimType)
   print(data, end="    ")
 
   while currentTries < maximumTries:
@@ -180,15 +151,16 @@ try:
 
     image = camera.capture_array()
     image = image[100:][:]
-    highlighlessImage = removeSpectralHighlights(image, 7 )
-    circles, circleImage = findVictims(highlighlessImage, 1, 100, 100, 20, 40, 100)
-    matchingCircles, matchingImage = matchVictims(circles, 80, highlighlessImage)
+    highlightlessImage = removeSpectralHighlights(image, 7 )
+    circles, circleImage = findVictims(highlightlessImage, 1, 100, 100, 20, 40, 100)
+    matchingCircle, matchingImage = matchVictims(circles, 80, highlightlessImage)
 
-    triangles, greenX, greenY, redX, redY = findTriangles(highlighlessImage)
-    transmitData(matchingCircles, greenX, greenY, redX, redY)
+    triangles, greenX, greenY, redX, redY = findTriangles(highlightlessImage)
+    victimType = typeCheck(matchingCircle, highlightlessImage, 10)
+    transmitData(matchingCircle, greenX, greenY, redX, redY, victimType)
 
     cv2.imshow("Image", image)
-    cv2.imshow("Highlightless", highlighlessImage)
+    cv2.imshow("Highlightless", highlightlessImage)
     cv2.imshow("Circles", circleImage)
     cv2.imshow("Matching", matchingImage)
     cv2.imshow("Triangles", triangles)
