@@ -2,6 +2,26 @@
 #include "functions.h"
 #include <Arduino.h>
 
+String data;
+int x, y, r, greenX, greenY, redX, redY;
+long lastUpdate = millis();
+
+void comUpdate() {
+  if(com.available() && millis() - lastUpdate > 5) {
+    data = "";
+    while(com.available() > 0) {
+      char character = com.read();
+      data += character;
+    }
+
+    int commaCount = 0;
+    for(int i=0; i<data.length(); i++) { if(data.charAt(i) == ',') commaCount ++; }
+    if(commaCount == 6) splitData();
+
+    lastUpdate = millis();
+  }
+}
+
 void splitData() {
   int commaPositions[6];
   int commaOccurance = 0;
@@ -26,34 +46,63 @@ void splitData() {
 }
 
 void findVictim() {
+  long startSearchTime = millis();
   while(r == 0) {
+    Serial.print("Searching");
+
+    comUpdate();
     if(Serial.available() > 0) { break; Serial.readString(); }
-    run(150, 150);
+    run(153, 150);
 
-    Serial.print("    ");
-    Serial.print(data);
+    sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+    Serial.print(characterBuffer);
 
-    if(digitalRead(touchPins[0]) == 0 || digitalRead(touchPins[1]) == 0) {
-      run(-150, -150, 700);
-      run(150, -150, random(1200, 2700));
-    }
+    if(digitalRead(touchPins[0]) == 0 || digitalRead(touchPins[1]) == 0 || millis() - startSearchTime > 16000) { startSearchTime = millis(); findWhileTurning(); }
 
     Serial.println();
   }
 }
 
-void approachVictim(float kP) {
-  while(r < 90 && r != 0) {
+void findWhileTurning() {
+  run(-160, -150, 1200);
+
+  long startRotationTime = millis();
+  int turnTime = random(1200, 2700);
+
+  while(millis() - startRotationTime < turnTime && r == 0) {
+    Serial.print("Search(Turn)");
+    
+    comUpdate();
     if(Serial.available() > 0) { break; Serial.readString(); }
-    int error = x - 250;
+
+    run(150, -150);
+
+    sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+    Serial.println(characterBuffer);
+  }
+}
+
+void approachVictim(float kP) {
+  while(r > 70 && r != 0) {
+    run(-120, -120);
+    comUpdate();
+  }
+  while(r < 90 && r != 0) {
+    Serial.print("Appraching");
+
+    comUpdate();
+    if(Serial.available() > 0) { break; Serial.readString(); }
+
+    int error = x - 240;
     int turn = error * kP;
     turn = constrain(turn, -30, 30);
 
     sprintf(characterBuffer, "    %d | %d %d    ", error, 150 + turn, 150 - turn);
     Serial.print(characterBuffer);
-    Serial.print(data);
+    sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+    Serial.print(characterBuffer);
 
-    run(100 + turn, 100 - turn);
+    run(120 + turn, 120 - turn);
 
     Serial.println();
   }
@@ -64,11 +113,10 @@ void grabSequence() {
     run(0, 0, 500);
     clawIncrement(500, 1);
 
-    run(100, 100, 3800);
-    run(0, 0);
-
+    run(120, 120, 3800);
     clawIncrement(1200, 1);
-    run(-100, -100, 3000);
+
+    run(-120, -120, 3000);
     run(0, 0);
 
     clawIncrement(800, 1);
@@ -85,16 +133,61 @@ void grabSequence() {
 void findTriangle() {
   if(grabbed == true) {
     delay(3000);
+
+    while(!ToF[0].isRangeComplete()) {}
+    do {
+      Serial.print("Backing");
+
+      if(ToF[0].isRangeComplete()) distancesToF[0] = ToF[0].readRange();
+
+      sprintf(characterBuffer, "Front Laser: %d", distancesToF[0]);
+      Serial.print(characterBuffer);
+
+      run(-120, -120);
+
+      Serial.println();
+    } while(distancesToF[0] < 230);
+
+    run(0, 0);
+
     while(greenX == 0) {
+      Serial.print("Locating");
+      if(Serial.available() > 0) { break; Serial.readString(); }
+      comUpdate();
+
+      sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+      Serial.print(characterBuffer);
       run(150, -150);
+
+      Serial.println();
     }
 
     while(greenX > 240) {
-      run(100, -100);
+      Serial.print("Aligning(R)");
+      if(Serial.available() > 0) { break; Serial.readString(); }
+      comUpdate();
+
+      sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+      Serial.print(characterBuffer);
+      run(120, -120);
+
+      Serial.println();
+    }
+
+    while(greenX < 240) {
+      Serial.print("Aligning(L)");
+      if(Serial.available() > 0) { break; Serial.readString(); }
+      comUpdate();
+
+      sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+      Serial.print(characterBuffer);
+      run(-110, 110);
+
+      Serial.println();
     }
 
     while(digitalRead(touchPins[0]) == 1 || digitalRead(touchPins[1]) == 1) {
-      run(150, 150);
+      run(300, 300);
     }
 
     run(150, 150, 300);
@@ -117,13 +210,7 @@ void evacuation() {
 
   while(Serial.available() == 0) {
     findVictim();
-
     run(0, 0, 500);
-
-    while(r > 70 && r != 0) {
-      run(-100, -100);
-    }
-
     approachVictim(0.5);
     grabSequence();
     findTriangle();

@@ -5,28 +5,10 @@ const int ARDUINO_ADDRESS = 0x0b;                                               
 byte programMode = 's';                                                                                                 // Current mode that the arduinp is in
 char characterBuffer[100];                                                                                              // Character buffer, used for sprintf()
 unsigned long programCount = 0;
-String data;
-int x, y, r, greenX, greenY, redX, redY;
-
-void receiveEvent(int size) {
-  Serial.println("Received Data!");
-  data = "";
-
-  while(Wire.available() > 0) {
-    char character = Wire.read();
-    data += character;
-  }
-
-  data.remove(0, 1);
-
-  Serial.print("\t");
-  Serial.println(data);
-
-  splitData();
-}
 
 void setup() {
   Serial.begin(115200);
+  com.begin(115200);
   randomSeed(analogRead(A0));
   Serial.println("\nCheckup on all devices ...");
   
@@ -37,12 +19,9 @@ void setup() {
   setupTouch();
   setupColorSensors();
   readFromEEPROM();
-  Wire.begin(ARDUINO_ADDRESS);
-  Wire.onReceive(receiveEvent);
 
   Serial.println("\nWaiting for key press ... ");
   while(Serial.available() == 0) {}
-
 }
 
 void loop() {

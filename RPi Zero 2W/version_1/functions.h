@@ -1,14 +1,11 @@
 #ifndef FUNCTIONS_H
   #define FUNCTIONS_H
+  #define com Serial1
 
   #include <Wire.h>
   #include <Servo.h>
   #include <Adafruit_VL53L0X.h>
   #include <EEPROM.h>
-
-  // version_1.ino
-    extern String data;
-    extern int x, y, r, greenX, greenY, redX, redY;
 
   // baseFunctions.cpp
     extern char characterBuffer[100];
@@ -44,8 +41,18 @@
     void PID(int velocity, float kP, float kI, float kD);
 
   // evacuationZone.cpp
+    extern String data;
+    extern int x, y, r, greenX, greenY, redX, redY;
+    extern bool grabbed;
+    extern void comUpdate();
+    extern void splitData();
+    extern void findVictim();
+    extern void findWhileTurning();
+    extern void approachVictim(float kP);
+    extern void grabSequence();
     extern void evacuation();
-    void splitData();
+    extern void findTriangle();
+    
 
     extern bool grabbed;
 
