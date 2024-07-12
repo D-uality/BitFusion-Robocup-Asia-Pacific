@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 String data;
-int x, y, r, greenX, greenY, redX, redY;
+int x, y, r, greenX, greenY, redX, redY, victimType;
 long lastUpdate = millis();
 
 void comUpdate() {
@@ -16,14 +16,14 @@ void comUpdate() {
 
     int commaCount = 0;
     for(int i=0; i<data.length(); i++) { if(data.charAt(i) == ',') commaCount ++; }
-    if(commaCount == 6) splitData();
+    if(commaCount == 7) splitData();
 
     lastUpdate = millis();
   }
 }
 
 void splitData() {
-  int commaPositions[6];
+  int commaPositions[7];
   int commaOccurance = 0;
 
   for(int i=0; i<data.length(); i++) {
@@ -33,28 +33,29 @@ void splitData() {
     }
   }
 
-  x      = data.substring(0                    , commaPositions[0]).toInt();
-  y      = data.substring(commaPositions[0] + 1, commaPositions[1]).toInt();
-  r      = data.substring(commaPositions[1] + 1, commaPositions[2]).toInt();
-  greenX = data.substring(commaPositions[2] + 1, commaPositions[3]).toInt();
-  greenY = data.substring(commaPositions[3] + 1, commaPositions[4]).toInt();
-  redX   = data.substring(commaPositions[4] + 1, commaPositions[5]).toInt();
-  redY   = data.substring(commaPositions[5] + 1, data.length() + 1).toInt();
+  x            = data.substring(0                    , commaPositions[0]).toInt();
+  y            = data.substring(commaPositions[0] + 1, commaPositions[1]).toInt();
+  r            = data.substring(commaPositions[1] + 1, commaPositions[2]).toInt();
+  greenX       = data.substring(commaPositions[2] + 1, commaPositions[3]).toInt();
+  greenY       = data.substring(commaPositions[3] + 1, commaPositions[4]).toInt();
+  redX         = data.substring(commaPositions[4] + 1, commaPositions[5]).toInt();
+  redY         = data.substring(commaPositions[5] + 1, commaPositions[6]).toInt();
+  victimType   = data.substring(commaPositions[6] + 1, data.length() + 1).toInt();
 
-  sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+  sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
   Serial.print(characterBuffer);
 }
 
 void findVictim() {
   long startSearchTime = millis();
-  while(r == 0) {
+  while(r == 0 || (victimType == 1 && victimsFound < 2) || (victimType == 0 && victimsFound == 2)) {
     Serial.print("Searching");
 
     comUpdate();
     if(Serial.available() > 0) { break; Serial.readString(); }
     run(153, 150);
 
-    sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+    sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
     Serial.print(characterBuffer);
 
     if(digitalRead(touchPins[0]) == 0 || digitalRead(touchPins[1]) == 0 || millis() - startSearchTime > 16000) { startSearchTime = millis(); findWhileTurning(); }
@@ -75,11 +76,15 @@ void findWhileTurning() {
     comUpdate();
     if(Serial.available() > 0) { break; Serial.readString(); }
 
+    sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
+    Serial.print(characterBuffer);
+
     run(150, -150);
 
-    sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
-    Serial.println(characterBuffer);
+    Serial.println();
   }
+
+  run(0, 0, 500);
 }
 
 void approachVictim(float kP) {
@@ -87,6 +92,7 @@ void approachVictim(float kP) {
     run(-120, -120);
     comUpdate();
   }
+
   while(r < 90 && r != 0) {
     Serial.print("Appraching");
 
@@ -99,7 +105,7 @@ void approachVictim(float kP) {
 
     sprintf(characterBuffer, "    %d | %d %d    ", error, 150 + turn, 150 - turn);
     Serial.print(characterBuffer);
-    sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+    sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
     Serial.print(characterBuffer);
 
     run(120 + turn, 120 - turn);
@@ -108,8 +114,13 @@ void approachVictim(float kP) {
   }
 }
 
+int triangleType;
+int victimsFound = 0;
+
 void grabSequence() {
   if(r > 85) {
+    triangleType = victimType;
+
     run(0, 0, 500);
     clawIncrement(500, 1);
 
@@ -119,11 +130,6 @@ void grabSequence() {
     run(-120, -120, 3000);
     run(0, 0);
 
-    clawIncrement(800, 1);
-    delay(50);
-    clawIncrement(1200, 1);
-    delay(50);
-
     clawIncrement(1800, 2);
 
     grabbed = true;
@@ -131,6 +137,8 @@ void grabSequence() {
 }
 
 void findTriangle() {
+  int triangleX;
+
   if(grabbed == true) {
     delay(3000);
 
@@ -150,36 +158,42 @@ void findTriangle() {
 
     run(0, 0);
 
-    while(greenX == 0) {
+    while(triangleX == 0) {
       Serial.print("Locating");
+      
       if(Serial.available() > 0) { break; Serial.readString(); }
       comUpdate();
+      triangleX = triangleType == 1 ? redX : greenX;
 
-      sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+      sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
       Serial.print(characterBuffer);
       run(150, -150);
 
       Serial.println();
     }
 
-    while(greenX > 240) {
+    while(triangleX > 240) {
       Serial.print("Aligning(R)");
+      
       if(Serial.available() > 0) { break; Serial.readString(); }
       comUpdate();
+      triangleX = triangleType == 1 ? redX : greenX;
 
-      sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+      sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
       Serial.print(characterBuffer);
       run(120, -120);
 
       Serial.println();
     }
 
-    while(greenX < 240) {
+    while(triangleX < 240) {
       Serial.print("Aligning(L)");
+      
       if(Serial.available() > 0) { break; Serial.readString(); }
       comUpdate();
+      triangleX = triangleType == 1 ? redX : greenX;
 
-      sprintf(characterBuffer, "    x: %d y: %d r: %d green: %d %d red: %d %d", x, y, r, greenX, greenY, redX, redY);
+      sprintf(characterBuffer, "    x: %d y: %d r: %d Green: %d %d Red: %d %d victimType: %d", x, y, r, greenX, greenY, redX, redY, victimType);
       Serial.print(characterBuffer);
       run(-110, 110);
 
@@ -197,9 +211,10 @@ void findTriangle() {
     clawIncrement(1300, 1);
     delay(500);
     clawIncrement(2500, 1);
-    run(0, 0, 5000);
+    run(0, 0, 1000);
 
     grabbed = false;
+    victimsFound ++;
   }
 }
 
@@ -209,9 +224,8 @@ void evacuation() {
   Serial.readString();
 
   while(Serial.available() == 0) {
-    findVictim();
-    run(0, 0, 500);
     approachVictim(0.5);
+    findVictim();
     grabSequence();
     findTriangle();
   }

@@ -42,8 +42,11 @@
 
   // evacuationZone.cpp
     extern String data;
-    extern int x, y, r, greenX, greenY, redX, redY;
+    extern int x, y, r, greenX, greenY, redX, redY, victimType;
     extern bool grabbed;
+    extern int triangleType;
+    extern int victimsFound;
+
     extern void comUpdate();
     extern void splitData();
     extern void findVictim();
