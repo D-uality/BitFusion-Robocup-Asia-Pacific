@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 Servo driveServos[4];                                                                                                   // Drive servo objects
-const int driveServoPins[4] = {10, 11, 9, 12};                                                                          // Drive servo pins
+const int driveServoPins[4] = {10, 11, 9, 4};                                                                          // Drive servo pins
 
 /* Initialise, attach, and write stop for all drive servos */
 void setupDriveServos() {
@@ -22,8 +22,8 @@ void setupDriveServos() {
   - delayTime: the delay, in milliseconds. OPTIONAL
 */
 void run(int v1, int v2, int delayTime) {
-  if(v1 > 0) v2 = v2 * 1.053 + 1;
-  if(v2 < 0) v1 = v1 * 1.053 - 1;
+  if(v2 > 0) v1 = v1 * 1.053 + 3;
+  if(v2 < 0) v1 = v1 * 1.053 - 3;
 
   v1 = constrain(v1, -1000, 1000);
   v2 = constrain(v2, -1000, 1000);

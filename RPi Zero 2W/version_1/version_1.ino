@@ -83,6 +83,12 @@ void loop() {
     evacuation();
   }
 
+  else if(programMode == 't') {
+    Serial.print("    Testing");
+
+    run(140, 140);
+  }
+
   else {
     Serial.print("Unrecognised!");
     programMode = 's';
