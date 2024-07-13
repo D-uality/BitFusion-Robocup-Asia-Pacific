@@ -82,15 +82,15 @@ def findTriangles(image):
   output = image.copy()
   imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
 
-  green = cv2.inRange(imageHSL, (0, 0, 90), (360, 360, 150))
+  green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
   greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
   red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
   redContours, _ = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
   maxGreenArea, maxRedArea = 0, 0
   largestGreenContour, largestRedContour = None, None
-  greenTotalX, greenTotalY, redTotalX, redTotalY = 0, 0, 0, 0
-  greenX, greenY, greenTotalPoint, redX, redY, redTotalPoint = 0, 0, 0, 0, 0, 0
+  greenMaxX, greenMinX, redMaxX, redMinX = 0, 0, 0, 0
+  greenX, redX = 0, 0
 
   for greenContour in greenContours:
     greenArea = cv2.contourArea(greenContour)
@@ -99,19 +99,17 @@ def findTriangles(image):
       largestGreenContour = greenContour
 
   if largestGreenContour is not None:
-    cv2.drawContours(output, largestGreenContour, -1, (255, 0, 0), 2)
+    cv2.drawContours(output, largestGreenContour, -1, (255, 0, 0), 3)
 
     for point in largestGreenContour:
-      greenTotalX += point[0][0]
-      greenTotalY += point[0][1]
-      greenTotalPoint += 1
+      greenMaxX = max(greenMaxX, point[0][0])
+      greenMinX = min(greenMinX, point[0][0])
 
-    greenX = int(greenTotalX / greenTotalPoint)
-    greenY = int(greenTotalY / greenTotalPoint)
+    greenX = int((greenMaxX + greenMinX) / 2)
 
   for redContour in redContours:
     redArea = cv2.contourArea(redContour)
-    if redArea > maxRedArea and redArea > 3000:
+    if redArea > maxRedArea and redArea > 12000:
       maxRedArea = redArea
       largestRedContour = redContour
 
@@ -119,19 +117,17 @@ def findTriangles(image):
     cv2.drawContours(output, largestRedContour, -1, (0, 255, 0), 2)
 
     for point in largestRedContour:
-      redTotalX += point[0][0]
-      redTotalY += point[0][1]
-      redTotalPoint += 1
+      redMaxX = max(redMaxX, point[0][0])
+      redMinX = min(redMinX, point[0][0])
 
-    redX = int(redTotalX / redTotalPoint)
-    redY = int(redTotalY / redTotalPoint)
+    redX = int((redMaxX + redMinX) / 2)
 
-  return output, greenX, greenY, redX, redY
+  return output, greenX, redX
 
-def transmitData(circle, greenX, greenY, redX, redY, victimType):
+def transmitData(circle, greenX, redX, victimType):
   currentTries, maximumTries = 0, 7
 
-  data = str(circle[0]) + "," + str(circle[1]) + "," + str(circle[2]) + "," + str(greenX) + "," + str(greenY) + "," + str(redX) + "," + str(redY) + "," + str(victimType)
+  data = str(circle[0]) + "," + str(circle[1]) + "," + str(circle[2]) + "," + str(greenX) + "," + str(redX) + "," + str(victimType)
   print(data, end="    ")
 
   while currentTries < maximumTries:
@@ -152,12 +148,12 @@ try:
     image = camera.capture_array()
     image = image[100:][:]
     highlightlessImage = removeSpectralHighlights(image, 7 )
-    circles, circleImage = findVictims(highlightlessImage, 1, 100, 100, 20, 40, 100)
+    circles, circleImage = findVictims(highlightlessImage, 0.9, 100, 100, 20, 40, 100)
     matchingCircle, matchingImage = matchVictims(circles, 80, highlightlessImage)
 
-    triangles, greenX, greenY, redX, redY = findTriangles(highlightlessImage)
+    triangles, greenX, redX = findTriangles(highlightlessImage)
     victimType = typeCheck(matchingCircle, highlightlessImage, 10)
-    transmitData(matchingCircle, greenX, greenY, redX, redY, victimType)
+    transmitData(matchingCircle, greenX, redX, victimType)
 
     cv2.imshow("Image", image)
     cv2.imshow("Highlightless", highlightlessImage)
