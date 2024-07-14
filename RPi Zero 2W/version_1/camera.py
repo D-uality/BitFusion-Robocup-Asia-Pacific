@@ -89,7 +89,7 @@ def findTriangles(image):
 
   maxGreenArea, maxRedArea = 0, 0
   largestGreenContour, largestRedContour = None, None
-  greenMaxX, greenMinX, redMaxX, redMinX = 0, 0, 0, 0
+  greenMaxX, greenMinX, redMaxX, redMinX = 0, WIDTH, 0, WIDTH
   greenX, redX = 0, 0
 
   for greenContour in greenContours:
@@ -104,7 +104,7 @@ def findTriangles(image):
     for point in largestGreenContour:
       greenMaxX = max(greenMaxX, point[0][0])
       greenMinX = min(greenMinX, point[0][0])
-
+      
     greenX = int((greenMaxX + greenMinX) / 2)
 
   for redContour in redContours:
@@ -139,6 +139,7 @@ def transmitData(circle, greenX, redX, victimType):
       print("    Data failure! Retrying...")
       time.sleep(0.1)
       currentTries += 1
+
   exit()
 
 try:
@@ -148,8 +149,8 @@ try:
     image = camera.capture_array()
     image = image[100:][:]
     highlightlessImage = removeSpectralHighlights(image, 7 )
-    circles, circleImage = findVictims(highlightlessImage, 0.9, 100, 100, 20, 40, 100)
-    matchingCircle, matchingImage = matchVictims(circles, 80, highlightlessImage)
+    circles, circleImage = findVictims(highlightlessImage, 0.6, 100, 100, 20, 40, 100)
+    matchingCircle, matchingImage = matchVictims(circles, 100, highlightlessImage)
 
     triangles, greenX, redX = findTriangles(highlightlessImage)
     victimType = typeCheck(matchingCircle, highlightlessImage, 10)
