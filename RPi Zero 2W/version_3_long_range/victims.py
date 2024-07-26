@@ -28,6 +28,7 @@ def findVictims(image, gray, green, red):
     for (x, y, r) in circles:
       cv2.circle(image, (x, y), r, (0, 255, 0), 1)
       cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
+      
   else:
     circles = [(0, 0, 0)]
 

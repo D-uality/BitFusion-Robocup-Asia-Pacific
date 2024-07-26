@@ -36,8 +36,8 @@ try:
     # matchingCircles, image = matchVictims(image, circles, previousCircles, 5)
     x, y = calculateAverage(circles)
 
-    cv2.imshow("image", image)
-    cv2.moveWindow("image", 0, 0)
+    # cv2.imshow("image", image)
+    # cv2.moveWindow("image", 0, 0)
 
     previousCircles = circles
 

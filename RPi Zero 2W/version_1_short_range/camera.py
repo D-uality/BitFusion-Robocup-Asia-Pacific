@@ -159,16 +159,16 @@ try:
     victimType = typeCheck(matchingCircle, highlightlessImage, 10)
     transmitData(matchingCircle, greenX, redX, victimType)
 
-    cv2.imshow("Image", image)
-    cv2.imshow("Highlightless", highlightlessImage)
-    cv2.imshow("Circles", circleImage)
-    cv2.imshow("Matching", matchingImage)
-    cv2.imshow("Triangles", triangles)
-    cv2.moveWindow("Image", 500, 0)
-    cv2.moveWindow("Highlightless", 500, 480-imageCutoff)
-    cv2.moveWindow("Circles", 980, 0)
-    cv2.moveWindow("Matching", 980, 480-imageCutoff)
-    cv2.moveWindow("Triangles", 1460, 0)
+    # cv2.imshow("Image", image)
+    # cv2.imshow("Highlightless", highlightlessImage)
+    # cv2.imshow("Circles", circleImage)
+    # cv2.imshow("Matching", matchingImage)
+    # cv2.imshow("Triangles", triangles)
+    # cv2.moveWindow("Image", 500, 0)
+    # cv2.moveWindow("Highlightless", 500, 480-imageCutoff)
+    # cv2.moveWindow("Circles", 980, 0)
+    # cv2.moveWindow("Matching", 980, 480-imageCutoff)
+    # cv2.moveWindow("Triangles", 1460, 0)
 
     previousCircles = circles
 
