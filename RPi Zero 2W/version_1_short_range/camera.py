@@ -12,10 +12,10 @@ WIDTH  = 480
 HEIGHT = 480
 
 camera = Picamera2()
-Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=1, hflip=1))
+Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=0, hflip=0))
 camera.configure(Configuration)
 camera.start()
-camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
+# camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
 cv2.startWindowThread()
 
 com = serial.Serial('/dev/ttyS0', 115200, timeout=1)
@@ -50,7 +50,7 @@ def validateVictims(circles):
   approvedCircles = []
 
   for (x, y, r) in circles:
-    if y > 30: approvedCircles.append((x, y, r))
+    if y > 30 and y < 150: approvedCircles.append((x, y, r))
 
   return approvedCircles
 
@@ -143,13 +143,16 @@ def transmitData(circle, greenX, redX, victimType):
   exit()
 
 try:
+
+  imageCutoff = 50
+
   while True:
     start = time.time()
 
     image = camera.capture_array()
-    image = image[100:][:]
+    image = image[imageCutoff:][:]
     highlightlessImage = removeSpectralHighlights(image, 7 )
-    circles, circleImage = findVictims(highlightlessImage, 0.6, 100, 100, 20, 40, 100)
+    circles, circleImage = findVictims(highlightlessImage, dp=1.5, minDist=100, param1=100, param2=30, minRadius=40, maxRadius=150)
     matchingCircle, matchingImage = matchVictims(circles, 100, highlightlessImage)
 
     triangles, greenX, redX = findTriangles(highlightlessImage)
@@ -162,9 +165,9 @@ try:
     cv2.imshow("Matching", matchingImage)
     cv2.imshow("Triangles", triangles)
     cv2.moveWindow("Image", 500, 0)
-    cv2.moveWindow("Highlightless", 500, 380)
+    cv2.moveWindow("Highlightless", 500, 480-imageCutoff)
     cv2.moveWindow("Circles", 980, 0)
-    cv2.moveWindow("Matching", 980, 380)
+    cv2.moveWindow("Matching", 980, 480-imageCutoff)
     cv2.moveWindow("Triangles", 1460, 0)
 
     previousCircles = circles
