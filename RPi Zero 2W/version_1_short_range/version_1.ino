@@ -1,7 +1,6 @@
 #include "functions.h"
 #include <Arduino.h>
 
-const int ARDUINO_ADDRESS = 0x0b;                                                                                         // The I2C address to appear as for the Rasbperry Pi to establish communications
 byte programMode = 's';                                                                                                 // Current mode that the arduinp is in
 char characterBuffer[100];                                                                                              // Character buffer, used for sprintf()
 unsigned long programCount = 0;
@@ -14,7 +13,7 @@ void setup() {
   
   setupDriveServos();
   clawServo.attach(clawServoPin);
-  clawServo.writeMicroseconds(2500);
+  clawServo.writeMicroseconds(2200);
   setupToF();
   setupTouch();
   setupColorSensors();

@@ -46,17 +46,17 @@ void splitData() {
 
 void findVictim() {
   long startSearchTime = millis();
-  while(r == 0 || (victimType == 1 && victimsFound < 2) || (victimType == 0 && victimsFound == 2)) {
+  while(r == 0) {
     Serial.print("Searching");
 
     comUpdate();
     if(Serial.available() > 0) { break; Serial.readString(); }
-    run(100, -100);
+    run(90, -90);
 
     sprintf(characterBuffer, "    Victim: %d %d %d Green: %d Red: %d victimType: %d", x, y, r, greenX, redX, victimType);
     Serial.print(characterBuffer);
 
-    if(digitalRead(touchPins[0]) == 0 || digitalRead(touchPins[1]) == 0 || millis() - startSearchTime > 16000) { 
+    if(digitalRead(touchPins[0]) == 0 || digitalRead(touchPins[1]) == 0 || millis() - startSearchTime > 25000) { 
       startSearchTime = millis(); 
       // findWhileTurning();
 
@@ -127,7 +127,7 @@ void grabSequence() {
     run(0, 0, 500);
     clawIncrement(500, 1);
 
-    run(120, 120, 3800);
+    run(140, 140, 3800);
     clawIncrement(1200, 1);
 
     run(-120, -120, 3000);
@@ -151,7 +151,7 @@ void findTriangle() {
 
       if(ToF[0].isRangeComplete()) distancesToF[0] = ToF[0].readRange();
 
-      sprintf(characterBuffer, "Front Laser: %d", distancesToF[0]);
+      sprintf(characterBuffer, "    Front Laser: %d", distancesToF[0]);
       Serial.print(characterBuffer);
 
       run(-120, -120);
@@ -160,6 +160,8 @@ void findTriangle() {
     } while(distancesToF[0] < 230);
 
     run(0, 0);
+    comUpdate();
+    while(com.available() == 0) { }
 
     while(triangleX == 0) {
       Serial.print("Locating");
@@ -175,7 +177,7 @@ void findTriangle() {
       Serial.println();
     }
 
-    while(triangleX > 240) {
+    while(triangleX > 229) {
       Serial.print("Aligning(R)");
       
       if(Serial.available() > 0) { break; Serial.readString(); }
@@ -189,7 +191,7 @@ void findTriangle() {
       Serial.println();
     }
 
-    while(triangleX < 240) {
+    while(triangleX < 239) {
       Serial.print("Aligning(L)");
       
       if(Serial.available() > 0) { break; Serial.readString(); }
@@ -239,6 +241,6 @@ void evacuation() {
     Serial.readString();
     while(Serial.available() == 0) { }
   }
-  
+
   clawServo.writeMicroseconds(2500);
 }
