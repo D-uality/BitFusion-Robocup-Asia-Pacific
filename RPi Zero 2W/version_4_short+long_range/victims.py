@@ -41,7 +41,7 @@ def findAverages(circles):
   return (xAverage, yAverage, 0)
 
 def findShortVictims(image, gray, green, red):
-  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=100, param2=25, minRadius=40, maxRadius=150)
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=100, param2=30, minRadius=40, maxRadius=150)
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")
@@ -52,7 +52,7 @@ def findShortVictims(image, gray, green, red):
       cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
   
   else:
-    circles = (-1, -1, -1)
+    circles = [(-1, -1, -1)]
 
   return circles, image
 
@@ -61,14 +61,14 @@ def matchVictims(image, circles, previousCircles, tolorance):
 
   for (x1, y1, r1) in circles:
     for (x2, y2, r2) in previousCircles:
-      delta = abs(x1 - x2) * 1 + abs(y1 -y2) * 1 + abs(r1 - r2) * 1
+      delta = abs(x1 - x2) * 1 + abs(y1 -y2) * 1 + abs(r1 - r2) * 5
 
-      if delta < tolorance:
+      if delta < tolorance and r1 != - 1:
         approvedCircles.append((x1, y1, r1))
-        cv2.circle(image, (x1, y1), r1, (0, 0, 255), 1)
-        cv2.circle(image, (x1, y1), 1 , (0, 0, 255), 1)
+        cv2.circle(image, (x1, y1), r1, (255, 0, 0), 1)
+        cv2.circle(image, (x1, y1), 1 , (255, 0, 0), 1)
 
   if len(approvedCircles) == 0:
-    approvedCircles.append((0, 0, 0))
+    approvedCircles.append((-1, -1, -1))
 
   return approvedCircles, image
