@@ -17,4 +17,8 @@ def generateMasks(image):
   red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
   gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-  return image, green, red, gray
+  return imageHSL, green, red, gray
+
+def noramliseCoordinates(x, imageSize):
+  if x != -1: return x - 900 if imageSize == 0 else x - 480
+  else:       return -1

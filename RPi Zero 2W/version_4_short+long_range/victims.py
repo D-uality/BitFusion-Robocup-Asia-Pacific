@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from imageTransform import *
 
 def validateVictims(circles, green, red):
   approvedCircles = []
@@ -11,8 +12,8 @@ def validateVictims(circles, green, red):
 
   return approvedCircles
 
-def findVictims(image, gray, green, red):
-  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=2, minDist=10, param1=100, param2=50, minRadius=20, maxRadius=200)
+def findLongVictims(image, gray, green, red):
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=2,   minDist=10, param1=100, param2=45, minRadius=20, maxRadius=200)
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")
@@ -23,7 +24,35 @@ def findVictims(image, gray, green, red):
       cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
       
   else:
-    circles = [(0, 0, 0)]
+    circles = [(-1, -1, -1)]
+
+  return circles, image
+
+def findAverages(circles):
+  xTotal, yTotal = 0, 0
+  xAverage, yAverage = 0, 0
+
+  for (x, y, r) in circles:
+    xTotal += x
+    yTotal += y
+
+  xAverage, yAverage = int(xTotal / len(circles)), int(yTotal / len(circles))
+
+  return (xAverage, yAverage, 0)
+
+def findShortVictims(image, gray, green, red):
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=100, param2=25, minRadius=40, maxRadius=150)
+
+  if circles is not None:
+    circles = np.round(circles[0, :]).astype("int")
+    circles = validateVictims(circles, green, red)
+
+    for (x, y, r) in circles:
+      cv2.circle(image, (x, y), r, (0, 0, 255), 1)
+      cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
+  
+  else:
+    circles = (-1, -1, -1)
 
   return circles, image
 
@@ -33,6 +62,7 @@ def matchVictims(image, circles, previousCircles, tolorance):
   for (x1, y1, r1) in circles:
     for (x2, y2, r2) in previousCircles:
       delta = abs(x1 - x2) * 1 + abs(y1 -y2) * 1 + abs(r1 - r2) * 1
+
       if delta < tolorance:
         approvedCircles.append((x1, y1, r1))
         cv2.circle(image, (x1, y1), r1, (0, 0, 255), 1)
@@ -42,14 +72,3 @@ def matchVictims(image, circles, previousCircles, tolorance):
     approvedCircles.append((0, 0, 0))
 
   return approvedCircles, image
-
-def calculateAverage(circles):
-  xTotal, yTotal = 0, 0
-
-  for (x, y, r) in circles: 
-    xTotal += x
-    yTotal += y
-
-  print(f"{xTotal / len(circles):.2f} {yTotal / len(circles):.2f}", end="")
-
-  return xTotal / len(circles), yTotal / len(circles)
