@@ -13,6 +13,7 @@ def validateVictims(circles, green, red):
   return approvedCircles
 
 def findLongVictims(image, gray, green, red):
+  circles = None
   circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=2,   minDist=10, param1=100, param2=45, minRadius=20, maxRadius=200)
 
   if circles is not None:

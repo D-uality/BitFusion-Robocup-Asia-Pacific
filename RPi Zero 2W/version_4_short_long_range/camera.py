@@ -3,10 +3,10 @@ import numpy as np
 from picamera2 import Picamera2, Preview
 from libcamera import Transform, controls
 import time
-import serial
 
 from imageTransform import *
 from victims import *
+from dataTransmission import *
 
 HEIGHT = 1080
 WIDTH  = 1900 
@@ -17,8 +17,6 @@ camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
 camera.configure(Configuration)
 camera.start()
 cv2.startWindowThread()
-
-com = serial.Serial('/dev/ttyS0', 115200, timeout=1)
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -43,6 +41,7 @@ try:
       longVictims = findAverages(longVictims)
 
       print(f"    LONG            {longVictims}", end="")
+      transmitData(longVictims[0], longVictims[1], longVictims[2])
 
       if longVictims[0] != -1:
         mode = 1
@@ -55,10 +54,11 @@ try:
       shortVictims, imageSmall = findShortVictims(imageSmall, graySmall, greenSmall, redSmall)
       matchingShortVicitms, _ = matchVictims(imageSmall, shortVictims, previousShortVictims, 100)
 
-      if longVictims[0] == -1:             mode = 0
-      if shortVictims[0][0] != -1: mode = 2
-
       print(f"    LONG + SHORT    {longVictims}    {shortVictims}", end="")
+      transmitData(longVictims[0], longVictims[1], longVictims[2])
+      
+      if longVictims[0] == -1:     mode = 0
+      if shortVictims[0][0] != -1: mode = 2
 
       previousShortVictims = shortVictims
 
@@ -66,7 +66,8 @@ try:
       shortVictims, imageSmall = findShortVictims(imageSmall, graySmall, greenSmall, redSmall)
       matchingShortVicitms, _ = matchVictims(imageSmall, shortVictims, previousShortVictims, 150)
 
-      print(f"    SHORT           {shortVictims}", end="")
+      print(f"    SHORT           {matchingShortVicitms}", end="")
+      transmitData(matchingShortVicitms[0][0], matchingShortVicitms[0][1], matchingShortVicitms[0][2])
 
       if matchingShortVicitms[0][0] == -1: mode = 0
 
