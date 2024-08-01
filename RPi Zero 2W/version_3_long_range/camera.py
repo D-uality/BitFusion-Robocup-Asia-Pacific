@@ -9,7 +9,7 @@ from imageTransform import *
 from victims import *
 
 HEIGHT = 1080
-WIDTH  = 1920 
+WIDTH  = 1920
 
 camera = Picamera2()
 Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=0, hflip=0))

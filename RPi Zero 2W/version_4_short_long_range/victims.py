@@ -4,25 +4,31 @@ from imageTransform import *
 
 def validateVictims(circles, green, red):
   approvedCircles = []
+  draw = True
 
   for(x, y, r) in circles:
     if  y > 30 \
     and red[y][x] == 0 \
     and green[y][x] == 0: approvedCircles.append((x, y, r))
 
-  return approvedCircles
+  if len(approvedCircles) == 0: 
+    approvedCircles.append((-1, -1, -1))
+    draw = False
+
+  return approvedCircles, draw
 
 def findLongVictims(image, gray, green, red):
-  circles = None
-  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=2,   minDist=10, param1=100, param2=45, minRadius=20, maxRadius=200)
+  blurred = cv2.medianBlur(gray.copy(), 11)
+  circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=2,   minDist=10, param1=100, param2=45, minRadius=20, maxRadius=200)
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")
-    circles = validateVictims(circles, green, red)
-
-    for (x, y, r) in circles:
-      cv2.circle(image, (x, y), r, (0, 255, 0), 1)
-      cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
+    circles, draw = validateVictims(circles, green, red)
+    
+    if draw:
+      for (x, y, r) in circles:
+        cv2.circle(image, (x, y), r, (0, 255, 0), 1)
+        cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
       
   else:
     circles = [(-1, -1, -1)]
@@ -46,12 +52,13 @@ def findShortVictims(image, gray, green, red):
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")
-    circles = validateVictims(circles, green, red)
+    circles, draw = validateVictims(circles, green, red)
 
-    for (x, y, r) in circles:
-      cv2.circle(image, (x, y), r, (0, 0, 255), 1)
-      cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
-  
+    if draw:
+      for (x, y, r) in circles:
+        cv2.circle(image, (x, y), r, (0, 0, 255), 1)
+        cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
+
   else:
     circles = [(-1, -1, -1)]
 
