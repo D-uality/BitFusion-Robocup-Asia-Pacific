@@ -8,6 +8,8 @@ def validateVictims(circles, green, red):
 
   for(x, y, r) in circles:
     if  y > 30 \
+    and y != 500 and y != 0 \
+    and x != 500 and y != 0 \
     and red[y][x] == 0 \
     and green[y][x] == 0: approvedCircles.append((x, y, r))
 
@@ -48,7 +50,7 @@ def findAverages(circles):
   return (xAverage, yAverage, 0)
 
 def findShortVictims(image, gray, green, red):
-  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=100, param2=30, minRadius=40, maxRadius=150)
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=60, param2=30, minRadius=40, maxRadius=150)
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")
