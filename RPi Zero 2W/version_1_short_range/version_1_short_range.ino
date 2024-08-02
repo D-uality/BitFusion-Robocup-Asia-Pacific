@@ -15,7 +15,7 @@ void setup() {
   clawServo.attach(clawServoPin);
   clawServo.writeMicroseconds(2200);
   setupToF();
-  setupTouch();
+  setupTouch();       
   setupColorSensors();
   readFromEEPROM();
 

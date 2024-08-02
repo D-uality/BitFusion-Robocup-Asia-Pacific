@@ -45,10 +45,19 @@
   // running.cpp
     extern void running();
 
+  // evacuationZone.cpp
+    extern String data;
+    extern int x, y, r;
+    
+    extern void comUpdate();
+    extern void splitData();
+    extern void evacuationZone();
+
   // testing.cpp
     extern void testing();
 
   // read.cpp
     extern void read();
+
   
 #endif

@@ -52,6 +52,8 @@ void loop() {
 
   else if (programMode == 'g') running();
   else if (programMode == 't') testing();
+  else if (programMode == 'e') evacuationZone();
+  
 
   else if (programMode == 'c') calibration();
   else if (programMode == 'w') write();
