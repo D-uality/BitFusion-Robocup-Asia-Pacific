@@ -32,4 +32,7 @@ def positionContour(image, contours):
 
     averageX = int((minX + maxX) / 2)
 
+  else:
+    averageX = 9999
+
   return image, averageX

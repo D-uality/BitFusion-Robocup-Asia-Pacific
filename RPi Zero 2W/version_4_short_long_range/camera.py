@@ -35,6 +35,7 @@ try:
     image = removeSpectralHighlights(image, 5)
     imageHSL, green, red, gray = generateMasks(image)
     image, greenX, redX = findTriangles(image, green, red)
+    greenX, redX = noramliseCoordinates(greenX, 0), noramliseCoordinates(redX, 0)
 
     xLowerBound, xUpperBound = int(WIDTH / 2) - int(REDUCTION_WIDTH / 2), int(WIDTH / 2) + int(REDUCTION_WIDTH / 2)
     imageSmall, greenSmall, redSmall, graySmall = image[0:REDUCTION_HEIGHT, xLowerBound:xUpperBound].copy(), \

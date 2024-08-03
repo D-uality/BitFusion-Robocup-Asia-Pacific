@@ -1,3 +1,4 @@
+from config import *
 import cv2
 import numpy as np
 
@@ -20,5 +21,5 @@ def generateMasks(image):
   return imageHSL, green, red, gray
 
 def noramliseCoordinates(x, imageSize):
-  if x != -1: return x - 900 if imageSize == 0 else x - 480
-  else:       return -1
+  if x == -1: return -1
+  else:       return int(x - (WIDTH / 2)) if imageSize == 0 else int(x - (REDUCTION_WIDTH / 2))
