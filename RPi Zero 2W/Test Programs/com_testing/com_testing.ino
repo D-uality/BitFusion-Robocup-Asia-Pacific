@@ -1,7 +1,7 @@
 #define com Serial1
 
 int x, y, r;
-int expectedCommaCount = 2;
+int expectedCommaCount = 4;
 long lastUpdate = millis();
 String data;
 char characterBuffer[100];
@@ -39,6 +39,8 @@ void splitData() {
   x            = data.substring(0                    , commaPositions[0]).toInt();
   y            = data.substring(commaPositions[0] + 1, commaPositions[1]).toInt();
   r            = data.substring(commaPositions[1] + 1, commaPositions[2]).toInt();
+  redX         = data.substring(commaPositions[2] + 1, commaPositions[3]).toInt();
+  greenX       = data.substring(commaPositions[3] + 1, data.length()    ).toInt();
 }
 
 void setup() {

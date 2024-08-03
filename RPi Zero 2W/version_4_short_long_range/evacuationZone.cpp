@@ -3,8 +3,8 @@
 #include <Arduino.h>
 
 String data;
-int x, y, r;
-int expectedCommaCount = 2;
+int x, y, r, greenX, redX, victimType;
+int expectedCommaCount = 5;
 long lastUpdate = millis();
 
 void comUpdate() {
@@ -40,18 +40,26 @@ void splitData() {
   x            = data.substring(0                    , commaPositions[0]).toInt();
   y            = data.substring(commaPositions[0] + 1, commaPositions[1]).toInt();
   r            = data.substring(commaPositions[1] + 1, commaPositions[2]).toInt();
+  greenX       = data.substring(commaPositions[2] + 1, commaPositions[3]).toInt();
+  redX         = data.substring(commaPositions[3] + 1, commaPositions[4]).toInt();
+  victimType   = data.substring(commaPositions[4] + 1, data.length() + 1).toInt();
 }
 
 void evacuationZone() {
   Serial.print("    Evacuation");
-  x = y = r = 0;
+  comUpdate();
 
-  searchAndApproach(1.5);
+  if(r > 100) {
+    grabSequence();
 
-  run(0, 0);
-  Serial.println("FINISHED!");
-  Serial.readString();
-  while(Serial.available() == 0) { }
+    run(0, 0);
+    Serial.println("FINISHED!");
+    Serial.readString();
+    while(Serial.available() == 0) { }
+
+  } else {
+    searchAndApproach(0.5);
+  }
 }
 
 void searchAndApproach(float kP) {
@@ -70,7 +78,9 @@ void searchAndApproach(float kP) {
 
     Serial.println();
 
-  } while(y <= 0);
+  } while(y == -1);
+
+  run(0, 0, 500);
 
   do {
     Serial.print("    Searching - LONG+SHORT");
@@ -87,7 +97,9 @@ void searchAndApproach(float kP) {
 
     Serial.println();
 
-  } while(r == 0);
+  } while(r == -1 && y != -1);
+
+  run(0, 0, 700);
 
   do {
     Serial.print("    Searching - SHORT     ");
@@ -95,11 +107,33 @@ void searchAndApproach(float kP) {
 
     int error = x;
     int turn = error * kP;
-    turn = constrain(turn, -25, 25);
+    turn = constrain(turn, -50, 50);
 
-    run(120 + turn, 120 - turn);
+    run(120 + turn, 125 - turn);
 
     Serial.println();
-    
-  } while(r < 120);
+
+  } while(r < 120 && r != -1 && y != -1);
+
+  run(0, 0, 700);
+}
+
+int triangleType;
+bool grabbed = false;
+
+void grabSequence() {
+  triangleType = victimType;
+
+  run(0, 0, 500);
+  clawIncrement(500, 1);
+
+  run(150, 155, 3800);
+  clawIncrement(1200, 1);
+
+  run(-150, -155, 3000);
+  run(0, 0);
+
+  clawIncrement(1800, 2);
+
+  grabbed = true;
 }
