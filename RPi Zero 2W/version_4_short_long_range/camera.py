@@ -10,6 +10,7 @@ from imageTransform import *
 from victims import *
 from dataTransmission import *
 from victimType import *
+from presenceCheck import *
 
 camera = Picamera2()
 Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=0, hflip=0))
@@ -42,6 +43,8 @@ try:
                                                   green[0:REDUCTION_HEIGHT, xLowerBound:xUpperBound].copy(), \
                                                   red  [0:REDUCTION_HEIGHT, xLowerBound:xUpperBound].copy(), \
                                                   gray [0:REDUCTION_HEIGHT, xLowerBound:xUpperBound].copy()
+
+    presence = presenceCheck(imageSmall)
 
     if mode == 0:
       longVictims, image = findLongVictims(image, gray, green, red)
@@ -81,7 +84,7 @@ try:
 
       previousShortVictims = shortVictims
 
-    transmitData(x, y, r, redX, greenX, victimType)
+    transmitData(x, y, r, redX, greenX, victimType, presence)
 
     cv2.imshow("image", image)
     cv2.imshow("imageSmall", imageSmall)
