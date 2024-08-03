@@ -9,6 +9,7 @@ from triangles import *
 from imageTransform import *
 from victims import *
 from dataTransmission import *
+from victimType import *
 
 camera = Picamera2()
 Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=0, hflip=0))
@@ -20,12 +21,12 @@ cv2.startWindowThread()
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 previousShortVictims = [(-1, -1, -1)]
-x, y, r = 0, 0, 0
 mode = 0
 
 try:
   while True:
     start = time.time()
+    x, y, r, victimType = 0, 0, 0, -1
     print(f"{mode}", end="")
     
     image = camera.capture_array()
@@ -73,12 +74,13 @@ try:
 
       print(f"    SHORT           {matchingShortVicitms}", end="")
       x, y, r = normaliseX(matchingShortVicitms[0][0], 2), matchingShortVicitms[0][1], matchingShortVicitms[0][2]
+      victimType = typeCheck((matchingShortVicitms[0][0], y, r), imageSmall, 10)
 
       if matchingShortVicitms[0][0] == -1: mode = 0
 
       previousShortVictims = shortVictims
 
-    transmitData(x, y, r, redX, greenX)
+    transmitData(x, y, r, redX, greenX, victimType)
 
     cv2.imshow("image", image)
     cv2.imshow("imageSmall", imageSmall)

@@ -19,53 +19,6 @@ def validateVictims(circles, green, red):
 
   return approvedCircles, draw
 
-def findLongVictims(image, gray, green, red):
-  blurred = cv2.medianBlur(gray.copy(), 11)
-  circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=2,   minDist=10, param1=100, param2=45, minRadius=20, maxRadius=200)
-
-  if circles is not None:
-    circles = np.round(circles[0, :]).astype("int")
-    circles, draw = validateVictims(circles, green, red)
-    
-    if draw:
-      for (x, y, r) in circles:
-        cv2.circle(image, (x, y), r, (0, 255, 0), 1)
-        cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
-      
-  else:
-    circles = [(-1, -1, -1)]
-
-  return circles, image
-
-def findAverages(circles):
-  xTotal, yTotal = 0, 0
-  xAverage, yAverage = 0, 0
-
-  for (x, y, r) in circles:
-    xTotal += x
-    yTotal += y
-
-  xAverage, yAverage = int(xTotal / len(circles)), int(yTotal / len(circles))
-
-  return (xAverage, yAverage, 0)
-
-def findShortVictims(image, gray, green, red):
-  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=60, param2=30, minRadius=40, maxRadius=150)
-
-  if circles is not None:
-    circles = np.round(circles[0, :]).astype("int")
-    circles, draw = validateVictims(circles, green, red)
-
-    if draw:
-      for (x, y, r) in circles:
-        cv2.circle(image, (x, y), r, (0, 0, 255), 1)
-        cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
-
-  else:
-    circles = [(-1, -1, -1)]
-
-  return circles, image
-
 def matchVictims(image, circles, previousCircles, tolorance):
   approvedCircles = []
 
@@ -82,3 +35,50 @@ def matchVictims(image, circles, previousCircles, tolorance):
     approvedCircles.append((-1, -1, -1))
 
   return approvedCircles, image
+
+def findAverages(circles):
+  xTotal, yTotal = 0, 0
+  xAverage, yAverage = 0, 0
+
+  for (x, y, r) in circles:
+    xTotal += x
+    yTotal += y
+
+  xAverage, yAverage = int(xTotal / len(circles)), int(yTotal / len(circles))
+
+  return (xAverage, yAverage, -1)
+
+def findLongVictims(image, gray, green, red):
+  blurred = cv2.medianBlur(gray.copy(), 11)
+  circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=2, minDist=10, param1=100, param2=45, minRadius=20, maxRadius=200)
+
+  if circles is not None:
+    circles = np.round(circles[0, :]).astype("int")
+    circles, draw = validateVictims(circles, green, red)
+    
+    if draw:
+      for (x, y, r) in circles:
+        cv2.circle(image, (x, y), r, (0, 255, 0), 1)
+        cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
+      
+  else:
+    circles = [(-1, -1, -1)]
+
+  return circles, image
+
+def findShortVictims(image, gray, green, red):
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=70, param2=30, minRadius=40, maxRadius=150)
+
+  if circles is not None:
+    circles = np.round(circles[0, :]).astype("int")
+    circles, draw = validateVictims(circles, green, red)
+
+    if draw:
+      for (x, y, r) in circles:
+        cv2.circle(image, (x, y), r, (0, 0, 255), 1)
+        cv2.circle(image, (x, y), 1, (0, 0, 255), 1)
+
+  else:
+    circles = [(-1, -1, -1)]
+
+  return circles, image
