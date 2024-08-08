@@ -4,6 +4,7 @@
 
 Servo driveServos[4];                                                                                                   // Drive servo objects
 const int driveServoPins[4] = {10, 11, 9, 12};                                                                          // Drive servo pins
+const int MID[4] = {1505, 1475, 1490, 1510};
 
 /* Initialise, attach, and write stop for all drive servos */
 void setupDriveServos() {
@@ -22,8 +23,11 @@ void setupDriveServos() {
   - delayTime: the delay, in milliseconds. OPTIONAL
 */
 void run(int v1, int v2, int delayTime) {
-  if(v2 > 0) v1 += v1 * 0.053;
-  if(v2 < 0) v1 += v1 * 0.2;
+  if(v1 > 0 && v1 <  115) v1 =  115;
+  if(v2 > 0 && v2 <  115) v2 =  115;
+  
+  if(v1 < 0 && v1 > -120) v1 = -120;
+  if(v2 < 0 && v2 > -120) v2 = -120;
 
   v1 = constrain(v1, -1000, 1000);
   v2 = constrain(v2, -1000, 1000);
@@ -31,10 +35,10 @@ void run(int v1, int v2, int delayTime) {
   sprintf(characterBuffer, "    v1: %d v2: %d", v1, v2);
   Serial.print(characterBuffer);
 
-  driveServos[0].writeMicroseconds(1500 + v1);
-  driveServos[1].writeMicroseconds(1500 + v1);
-  driveServos[2].writeMicroseconds(1500 - v2);
-  driveServos[3].writeMicroseconds(1500 - v2);
+  driveServos[0].writeMicroseconds(MID[0] + v1);
+  driveServos[1].writeMicroseconds(MID[1] + v1);
+  driveServos[2].writeMicroseconds(MID[2] - v2);
+  driveServos[3].writeMicroseconds(MID[3] - v2);
 
   delay(delayTime);
 }

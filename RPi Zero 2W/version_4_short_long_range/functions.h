@@ -55,6 +55,8 @@
     extern void evacuationZone();
     extern void searchAndApproach(float kP);
     extern void grabSequence();
+    extern void findTriangle();
+    extern void dropSequence();
 
   // testing.cpp
     extern void testing();

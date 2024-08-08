@@ -7,6 +7,9 @@ int x, y, r, greenX, redX, victimType;
 int expectedCommaCount = 5;
 long lastUpdate = millis();
 
+int triangleType;
+bool grabbed = false;
+
 void comUpdate() {
   if(com.available() && millis() - lastUpdate > 7) {
     data = "";
@@ -22,7 +25,7 @@ void comUpdate() {
     lastUpdate = millis();
   }
 
-  sprintf(characterBuffer, "    Victim: %d %d %d", x, y, r);
+  sprintf(characterBuffer, "    Victim: %d %d %d    Green: %d    Red: %d    victimType: %d", x, y, r, greenX, redX, victimType);
   Serial.print(characterBuffer);
 }
 
@@ -51,30 +54,29 @@ void evacuationZone() {
 
   if(r > 100) {
     grabSequence();
+  } else {
+    searchAndApproach(0.5);
+  }
+
+  if(grabbed == true) {
+    findTriangle();
+    dropSequence();
 
     run(0, 0);
     Serial.println("FINISHED!");
     Serial.readString();
     while(Serial.available() == 0) { }
-
-  } else {
-    searchAndApproach(0.5);
   }
 }
 
 void searchAndApproach(float kP) {
   unsigned long start = millis();
-  unsigned long waitTime = 2000;
-  unsigned long spinTime = waitTime + 750;
-  unsigned long forwardTime = waitTime + 500;
 
   do {
     Serial.print("    Searching - LONG      ");
     comUpdate();
 
-    if(      millis() - start < waitTime ) run(0, 0);
-    else if( millis() - start < spinTime ) run(200, -200);
-    else                                   start = millis();
+    run(120, -120);
 
     Serial.println();
 
@@ -90,16 +92,13 @@ void searchAndApproach(float kP) {
     int turn = error * kP;
     turn = constrain(turn, -50, 50);
 
-    
-    if(      millis() - start < waitTime    ) run(0, 0);
-    else if( millis() - start < forwardTime ) run(150 + turn, 150 - turn);
-    else                                      start = millis();
+    run(130 + turn, 130 - turn);
 
     Serial.println();
 
   } while(r == -1 && y != -1);
 
-  run(0, 0, 700);
+  run(0, 0, 500);
 
   do {
     Serial.print("    Searching - SHORT     ");
@@ -109,31 +108,94 @@ void searchAndApproach(float kP) {
     int turn = error * kP;
     turn = constrain(turn, -50, 50);
 
-    run(120 + turn, 125 - turn);
+    run(130 + turn, 130 - turn);
 
     Serial.println();
 
   } while(r < 120 && r != -1 && y != -1);
 
-  run(0, 0, 700);
-}
-
-int triangleType;
-bool grabbed = false;
-
-void grabSequence() {
   triangleType = victimType;
 
   run(0, 0, 500);
+}
+
+void grabSequence() {
+  run(0, 0, 500);
   clawIncrement(500, 1);
 
-  run(150, 155, 3800);
-  clawIncrement(1200, 1);
+  run(130, 130, 3800);
+  clawIncrement(1200, 2);
 
-  run(-150, -155, 3000);
+  run(-150, -150, 3000);
   run(0, 0);
 
   clawIncrement(1800, 2);
 
   grabbed = true;
+}
+
+void findTriangle() {
+  int triangleX;
+
+  while(com.available() != 0) { com.read(); }
+  while(com.available() == 0) { }
+  comUpdate();
+
+  do {
+    Serial.print("    Locating");
+    comUpdate();
+    triangleX = triangleType == 0 ? greenX : redX;
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
+
+
+    run(130, -130);
+
+    Serial.println();
+  } while(triangleX == 9499);
+
+  run(0, 0, 500);
+
+  do {
+    Serial.print("    Aligning(R)");
+    comUpdate();
+    triangleX = triangleType == 0 ? greenX : redX;
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
+
+
+    run(120, -120);
+    
+    Serial.println();
+  } while(triangleX > 15);
+  
+  run(0, 0, 500);
+  
+  do {
+    Serial.print("    Aligning(L)");
+    comUpdate();
+    triangleX = triangleType == 0 ? greenX : redX;
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
+
+    run(-110, 110);
+
+    Serial.println();
+  } while(triangleX < 5);
+}
+
+void dropSequence() {
+  while(digitalRead(touchPins[0]) == 1 && digitalRead(touchPins[1]) == 1) {
+    run(200, 210);
+    Serial.println();
+  }
+
+  run(150, 150, 300);
+  run(-150, -150, 500);
+  run(0, 0);
+
+  clawIncrement(1300, 1);
+  delay(500);                    
+  clawIncrement(2500, 1);
+  run(0, 0, 1000);
+  run(-150, -155, 6000);
+
+  grabbed = false;
 }
