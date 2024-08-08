@@ -51,7 +51,10 @@
     
     extern void comUpdate();
     extern void splitData();
+
     extern void evacuationZone();
+    extern void searchAndApproach(float kP);
+    extern void grabSequence();
 
   // testing.cpp
     extern void testing();
