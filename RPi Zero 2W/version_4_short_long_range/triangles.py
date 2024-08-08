@@ -19,12 +19,12 @@ def positionContour(image, contours):
   for contour in contours:
     area = cv2.contourArea(contour)
 
-    if area > maxArea and area > 12000:
+    if area > maxArea and area > 36000:
       maxArea = area
       maxContour = contour
   
   if maxContour is not None:
-    cv2.drawContours(image, maxContour, -1, (255, 0, 0), 3)
+    cv2.drawContours(image, maxContour, -1, (255, 0, 0), 1)
 
     for point in maxContour:
       minX = min(minX, point[0][0])

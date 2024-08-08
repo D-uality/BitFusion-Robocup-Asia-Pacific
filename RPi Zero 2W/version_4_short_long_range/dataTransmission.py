@@ -10,15 +10,14 @@ def normaliseX(x, mode):
   if   mode == 1: return x - int(WIDTH / 2)
   elif mode == 2: return x - int(REDUCTION_WIDTH / 2)
 
-def transmitData(x, y, r, greenX, redX, victimType, presence):
+def transmitData(x, y, r, greenX, redX, victimType):
   currentTries, maximumTries = 0, 7
 
   data = str(x) + "," + str(y) + "," + str(r) + "," + \
          str(greenX) + "," + str(redX) + "," + \
-         str(victimType) + "," + \
-         str(presence)
+         str(victimType)
          
-  print(f"    {data}", end="")
+  print(f"    Victim: {x} {y} {r}    Green: {greenX}    Red: {redX}    victimType: {victimType}", end="")
 
   while currentTries < maximumTries:
     try:

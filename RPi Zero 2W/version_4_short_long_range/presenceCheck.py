@@ -8,7 +8,7 @@ def isGray(pixel, threshold):
 def presenceCheck(image):
   x, y = int(REDUCTION_WIDTH / 2), REDUCTION_HEIGHT - 130
 
-  print(f"    {image[x, y]}")
+  # print(f"    {image[x, y]}")
   cv2.circle(image, (x, y), 1, (255, 255, 255), 1)
 
   if isGray(image[x, y], 100): return 0

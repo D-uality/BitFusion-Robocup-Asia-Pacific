@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-import signal
 from imageTransform import *
+from config import *
 
 def validateVictims(circles, green, red):
   approvedCircles = []
@@ -9,8 +9,8 @@ def validateVictims(circles, green, red):
 
   for(x, y, r) in circles:
     if  y > 30 \
-    and y != 500 and y != 0 \
-    and x != 500 and y != 0 \
+    and y != REDUCTION_HEIGHT and y != 0 \
+    and x != REDUCTION_WIDTH  and y != 0 \
     and red[y][x] == 0 \
     and green[y][x] == 0: approvedCircles.append((x, y, r))
 
@@ -49,24 +49,9 @@ def findAverages(circles):
 
   return (xAverage, yAverage, -1)
 
-class TimeoutException(Exception):
-  pass
-
-def timeoutHandler(signum, frame):
-  raise TimeoutException 
-
 def findLongVictims(image, gray, green, red):
-  timeout =  1
-  signal.signal(signal.SIGALRM, timeoutHandler)
-  signal.alarm(timeout)
-
-  try:
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=2, minDist=10, param1=55, param2=50, minRadius=20, maxRadius=200)
-    signal.alarm(0)
-  except TimeoutException:
-    signal.alarm(0)
-    circles = np.array([])
-
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=2, minDist=10, param1=55, param2=50, minRadius=20, maxRadius=200)
+  
   if circles is not None and len(circles) > 0:
     circles = np.round(circles[0, :]).astype("int")
     circles, draw = validateVictims(circles, green, red)
@@ -77,12 +62,12 @@ def findLongVictims(image, gray, green, red):
         cv2.circle(image, (x, y), 1, (0, 255, 0), 1)
 
   else:
-      circles = [(-1, -1, -1)]
+    circles = [(-1, -1, -1)]
 
   return circles, image
 
 def findShortVictims(image, gray, green, red):
-  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=100, param1=65, param2=35, minRadius=40, maxRadius=150)
+  circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1.5, minDist=300, param1=80, param2=30, minRadius=40, maxRadius=150)
 
   if circles is not None:
     circles = np.round(circles[0, :]).astype("int")

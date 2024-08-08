@@ -35,8 +35,6 @@ try:
 
     image = removeSpectralHighlights(image, 5)
     imageHSL, green, red, gray = generateMasks(image)
-    image, greenX, redX = findTriangles(image, green, red)
-    greenX, redX = noramliseCoordinates(greenX, 0), noramliseCoordinates(redX, 0)
 
     xLowerBound, xUpperBound = int(WIDTH / 2) - int(REDUCTION_WIDTH / 2), int(WIDTH / 2) + int(REDUCTION_WIDTH / 2)
     imageSmall, greenSmall, redSmall, graySmall = image[0:REDUCTION_HEIGHT, xLowerBound:xUpperBound].copy(), \
@@ -84,11 +82,14 @@ try:
 
       previousShortVictims = shortVictims
 
-    transmitData(x, y, r, redX, greenX, victimType, presence)
+    image, greenX, redX = findTriangles(image, green, red)
+    greenX, redX = noramliseCoordinates(greenX, 0), noramliseCoordinates(redX, 0)
 
-    cv2.imshow("image", image)
-    cv2.imshow("imageSmall", imageSmall)
-    cv2.moveWindow("image", 0, 20)
+    transmitData(x, y, r, greenX, redX, victimType)
+
+    # cv2.imshow("image", image)
+    # cv2.imshow("imageSmall", imageSmall)
+    # cv2.moveWindow("image", 0, 20)
 
     print(f"    {(1/(time.time()-start)):.2f} pc/s")
 
