@@ -17,7 +17,8 @@ Configuration = camera.create_preview_configuration(main={"format": "RGB888", "s
 camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
 camera.configure(Configuration)
 camera.start()
-cv2.startWindowThread()
+
+if SSH: cv2.startWindowThread()
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -87,9 +88,10 @@ try:
 
     transmitData(x, y, r, greenX, redX, victimType)
 
-    # cv2.imshow("image", image)
-    # cv2.imshow("imageSmall", imageSmall)
-    # cv2.moveWindow("image", 0, 20)
+    if SSH:
+      cv2.imshow("image", image)
+      cv2.imshow("imageSmall", imageSmall)
+      cv2.moveWindow("image", 0, 20)
 
     print(f"    {(1/(time.time()-start)):.2f} pc/s")
 

@@ -9,6 +9,8 @@ def findTriangles(image, green, red):
   image, greenX = positionContour(image, greenContours)
   image, redX   = positionContour(image, redContours  )
 
+  if redX != 9999: greenX = 9999
+  
   return image, greenX, redX
 
 def positionContour(image, contours):
