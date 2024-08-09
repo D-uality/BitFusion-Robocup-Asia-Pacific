@@ -4,13 +4,13 @@
 
 Servo driveServos[4];                                                                                                   // Drive servo objects
 const int driveServoPins[4] = {10, 11, 9, 12};                                                                          // Drive servo pins
-const int MID[4] = {1505, 1475, 1490, 1510};
+const int MID[4] = {1505, 1475, 1490, 1485};
 
 /* Initialise, attach, and write stop for all drive servos */
 void setupDriveServos() {
   for(int i=0; i<4; i++) {
     driveServos[i].attach(driveServoPins[i]);
-    driveServos[i].writeMicroseconds(1500);
+    driveServos[i].writeMicroseconds(MID[i]);
   }
 }
 
@@ -22,12 +22,24 @@ void setupDriveServos() {
   - v2: the velocity for the right side, mapped to 1000-2000
   - delayTime: the delay, in milliseconds. OPTIONAL
 */
-void run(int v1, int v2, int delayTime) {
-  if(v1 > 0 && v1 <  115) v1 =  115;
-  if(v2 > 0 && v2 <  115) v2 =  115;
+void run(int v1, int v3, int delayTime) { 
+  if(v1 > 0 && v1 <  100) v1 =  100;
+  if(v3 > 0 && v3 <  100) v3 =  100;
   
-  if(v1 < 0 && v1 > -120) v1 = -120;
-  if(v2 < 0 && v2 > -120) v2 = -120;
+  if(v1 < 0 && v1 > -100) v1 = -100;
+  if(v3 < 0 && v3 > -100) v3 = -100;
+
+  int v2 = v1, v4 = v3;
+
+  // Using v2 as the base velocity
+  if(v1 > 0) v1 *= 1.06;
+  if(v1 < 0) v1 *= 1.5;
+
+  if(v3 > 0) v3 *= 1.06;
+  if(v3 < 0) v3 *= 1.27;
+
+  if(v4 > 0) v4 *= 1.06;
+  if(v4 < 0) v4 *= 1.42;
 
   v1 = constrain(v1, -1000, 1000);
   v2 = constrain(v2, -1000, 1000);
@@ -36,9 +48,9 @@ void run(int v1, int v2, int delayTime) {
   Serial.print(characterBuffer);
 
   driveServos[0].writeMicroseconds(MID[0] + v1);
-  driveServos[1].writeMicroseconds(MID[1] + v1);
-  driveServos[2].writeMicroseconds(MID[2] - v2);
-  driveServos[3].writeMicroseconds(MID[3] - v2);
+  driveServos[1].writeMicroseconds(MID[1] + v2);
+  driveServos[2].writeMicroseconds(MID[2] - v3);
+  driveServos[3].writeMicroseconds(MID[3] - v4);
 
   delay(delayTime);
 }
@@ -71,8 +83,19 @@ void setupToF() {
       while(true) {}
     }
 
-    ToF[i].startRangeContinuous();
     delay(10);
+  }
+}
+
+void readToF(int sensor) {
+  VL53L0X_RangingMeasurementData_t measure;
+  
+  ToF[sensor].rangingTest(&measure, false);
+  
+  if(measure.RangeStatus != 4) {
+    distancesToF[sensor] = measure.RangeMilliMeter;
+    sprintf(characterBuffer, "    ToF[%d]: %d", sensor, distancesToF[sensor]);
+    Serial.print(characterBuffer);
   }
 }
 
