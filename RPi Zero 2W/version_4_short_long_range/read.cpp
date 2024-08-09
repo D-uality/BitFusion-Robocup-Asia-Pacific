@@ -5,5 +5,7 @@
 void read() {
   Serial.print("    Reading");
 
+  readToF(0);
+
   
 }

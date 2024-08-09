@@ -61,16 +61,13 @@ void evacuationZone() {
   if(grabbed == true) {
     findTriangle();
     dropSequence();
-
-    run(0, 0);
-    Serial.println("FINISHED!");
-    Serial.readString();
-    while(Serial.available() == 0) { }
   }
 }
 
 void searchAndApproach(float kP) {
   unsigned long start = millis();
+  unsigned long waitTime = 1000;
+  unsigned long forwardTime = waitTime + 500;
 
   do {
     Serial.print("    Searching - LONG      ");
@@ -92,7 +89,9 @@ void searchAndApproach(float kP) {
     int turn = error * kP;
     turn = constrain(turn, -50, 50);
 
-    run(130 + turn, 130 - turn);
+    if(      millis() - start < waitTime    ) run(0, 0);
+    else if( millis() - start < forwardTime ) run(120 + turn, 120 - turn);
+    else                                      start = millis();
 
     Serial.println();
 
@@ -108,7 +107,7 @@ void searchAndApproach(float kP) {
     int turn = error * kP;
     turn = constrain(turn, -50, 50);
 
-    run(130 + turn, 130 - turn);
+    run(120 + turn, 120 - turn);
 
     Serial.println();
 
@@ -123,7 +122,7 @@ void grabSequence() {
   run(0, 0, 500);
   clawIncrement(500, 1);
 
-  run(130, 130, 3800);
+  run(150, 150, 3800);
   clawIncrement(1200, 2);
 
   run(-150, -150, 3000);
@@ -148,7 +147,7 @@ void findTriangle() {
     triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
 
-    run(130, -130);
+    run(125, -125);
 
     Serial.println();
   } while(triangleX == 9499);
@@ -165,7 +164,7 @@ void findTriangle() {
     run(120, -120);
     
     Serial.println();
-  } while(triangleX > 15);
+  } while(triangleX > 15 && triangleX != 9499);
   
   run(0, 0, 500);
   
@@ -178,12 +177,18 @@ void findTriangle() {
     run(-110, 110);
 
     Serial.println();
-  } while(triangleX < 5);
+  } while(triangleX < 5 && triangleX != 9499);
+
+  readToF(0);
+
+  if(distancesToF[0] < 400) {
+    run(150, -150, 400);
+  }
 }
 
 void dropSequence() {
   while(digitalRead(touchPins[0]) == 1 && digitalRead(touchPins[1]) == 1) {
-    run(200, 210);
+    run(200, 200);
     Serial.println();
   }
 
@@ -194,8 +199,9 @@ void dropSequence() {
   clawIncrement(1300, 1);
   delay(500);                    
   clawIncrement(2500, 1);
+
   run(0, 0, 1000);
-  run(-150, -155, 6000);
+  run(-150, -150, 6000);
 
   grabbed = false;
 }

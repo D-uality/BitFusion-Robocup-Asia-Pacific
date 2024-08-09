@@ -18,6 +18,7 @@
     extern Adafruit_VL53L0X ToF[3];
     extern uint16_t distancesToF[3];
     void setupToF();
+    void readToF(int sensor);
 
     extern Servo clawServo;
     extern const int clawServoPin;
