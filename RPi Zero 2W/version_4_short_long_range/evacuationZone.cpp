@@ -157,7 +157,21 @@ void findTriangle() {
     triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
 
-    run(130, -130);
+    run(120, -120);
+
+    Serial.println();
+  } while(triangleX == 9499);
+
+  run(120, 120, 200);
+
+  do {
+    Serial.print("    Locating");
+    comUpdate();
+    triangleX = triangleType == 0 ? greenX : redX;
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
+
+
+    run(120, -120);
 
     Serial.println();
   } while(triangleX == 9499);
@@ -177,7 +191,7 @@ void findTriangle() {
     triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
 
-    run(125, -125);
+    run(120, -120);
     
     Serial.println();
   } while(triangleX != 9499);
@@ -192,7 +206,7 @@ void findTriangle() {
     triangleX = triangleType == 0 ? greenX : redX;
     triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
-    run(-125, 125);
+    run(-120, 120);
 
     Serial.println();
   } while(triangleX == 9499);
@@ -203,7 +217,7 @@ void findTriangle() {
     triangleX = triangleType == 0 ? greenX : redX;
     triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
-    run(-125, 125);
+    run(-120, 120);
 
     Serial.println();
   } while(triangleX !=9499);
@@ -212,7 +226,7 @@ void findTriangle() {
   Serial.println();
   unsigned long end = millis();
 
-  run(125, -125, (end- start) / 2);
+  run(120, -120, (end- start) / 2);
   run(0, 0);
 }
 

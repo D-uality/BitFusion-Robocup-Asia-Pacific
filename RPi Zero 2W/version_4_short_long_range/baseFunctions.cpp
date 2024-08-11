@@ -29,6 +29,9 @@ void run(int v1, int v3, int delayTime) {
   if(v1 < 0 && v1 > -100) v1 = -100;
   if(v3 < 0 && v3 > -100) v3 = -100;
 
+  if(v1 > 0 && v3 < 0) v1 += 27;
+  if(v3 > 0 && v1 < 0) v3 += 27;
+
   int v2 = v1, v4 = v3;
 
   // Using v2 as the base velocity
