@@ -4,8 +4,11 @@
 
 String data;
 int x, y, r, greenX, redX, victimType;
+int greenBuffer[5] = {9499, 9499, 9499, 9499, 9499};
+int redBuffer[5]   = {9499, 9499, 9499, 9499, 9499};
 int expectedCommaCount = 5;
 long lastUpdate = millis();
+unsigned long counter = 0;
 
 int triangleType;
 bool grabbed = false;
@@ -46,6 +49,10 @@ void splitData() {
   greenX       = data.substring(commaPositions[2] + 1, commaPositions[3]).toInt();
   redX         = data.substring(commaPositions[3] + 1, commaPositions[4]).toInt();
   victimType   = data.substring(commaPositions[4] + 1, data.length() + 1).toInt();
+
+  greenBuffer[counter % 5] = greenX;
+  redBuffer[  counter % 5] = redX;
+  counter ++;
 }
 
 void evacuationZone() {
@@ -136,6 +143,7 @@ void grabSequence() {
   do {
     run(-150, -150);
     readToF(0);
+    Serial.println();
   } while(distancesToF[0] < 300);
 
   run(0, 0);
@@ -144,89 +152,94 @@ void grabSequence() {
 }
 
 void findTriangle() {
-  int triangleX;
+  while(com.available() != 0) { com.read(); }
+  while(com.available() == 0) { }
+  comUpdate();
+
+  int triangleX = 0;
+  long triangleTotal = 0, triangleAverage = 0;
+
+  do {
+    Serial.print("    Locating");
+    
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("    RED");
+    comUpdate();
+    for(int i=0; i<5; i++) { triangleTotal += triangleType == 0 ? greenBuffer[i] : redBuffer[i]; }
+    triangleAverage = triangleTotal / 5;
+
+    run(120, -120);
+
+    sprintf(characterBuffer, "    triangle (total, average): %ld %ld", triangleTotal, triangleAverage);
+    Serial.print(characterBuffer);
+
+    triangleTotal = 0;
+    Serial.println();
+  } while(triangleAverage > 2000);
+
+  do {
+    Serial.print("    Aligning(LR)");
+
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("    RED");
+    comUpdate();
+    triangleX = triangleType == 0 ? greenX : redX;
+
+    run(115, -115);
+
+    Serial.println();
+  } while(triangleX > 0);
+  
+  do {
+    Serial.print("    Aligning(LL)");
+
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("    RED");
+    comUpdate();
+    triangleX = triangleType == 0 ? greenX : redX;
+
+    run(-110, 110);
+
+    Serial.println();
+  } while(triangleX < 0);
+
+  do {
+    run(200, 200);
+    readToF(0);
+    Serial.println();
+  } while(distancesToF[0] > 300);
+  
+  do {
+    run(-200, -200);
+    readToF(0);
+    Serial.println();
+  } while(distancesToF[0] < 301);
 
   while(com.available() != 0) { com.read(); }
   while(com.available() == 0) { }
   comUpdate();
 
   do {
-    Serial.print("    Locating");
+    Serial.print("    Aligning(SR)");
+
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("    RED");
     comUpdate();
     triangleX = triangleType == 0 ? greenX : redX;
-    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
-
-    run(120, -120);
+    run(115, -115);
 
     Serial.println();
-  } while(triangleX == 9499);
-
-  run(120, 120, 200);
-
-  do {
-    Serial.print("    Locating");
-    comUpdate();
-    triangleX = triangleType == 0 ? greenX : redX;
-    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
-
-
-    run(120, -120);
-
-    Serial.println();
-  } while(triangleX == 9499);
-
-  run(0, 0, 500);
-  Serial.println();
-
-  do {
-    readToF(0);
-    run(150, 150);
-  } while(distancesToF[0] > 400);
-
-  do {
-    Serial.print("    Aligning(R)");
-    comUpdate();
-    triangleX = triangleType == 0 ? greenX : redX;
-    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
-
-
-    run(120, -120);
-    
-    Serial.println();
-  } while(triangleX != 9499);
-  
-  run(0, 0, 500);
-  Serial.println();
-  unsigned long start = millis();
-
-  do {
-    Serial.print("    Aligning(L)");
-    comUpdate();
-    triangleX = triangleType == 0 ? greenX : redX;
-    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
-
-    run(-120, 120);
-
-    Serial.println();
-  } while(triangleX == 9499);
+  } while(triangleX > 0);
   
   do {
-    Serial.print("    Aligning(L)");
+    Serial.print("    Aligning(SL)");
+
+    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("    RED");
     comUpdate();
     triangleX = triangleType == 0 ? greenX : redX;
-    triangleType == 0 ? Serial.print("    GREEN") : Serial.print("      RED");
 
-    run(-120, 120);
+    run(-110, 110);
 
     Serial.println();
-  } while(triangleX !=9499);
+  } while(triangleX < 0);
 
-  run(0, 0, 500);
-  Serial.println();
-  unsigned long end = millis();
-
-  run(120, -120, (end- start) / 2);
   run(0, 0);
 }
 
