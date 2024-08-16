@@ -8,7 +8,7 @@ def validateVictims(circles, green, red):
   draw = True
 
   for(x, y, r) in circles:
-    if  y > 30 \
+    if  y > 30  and y < REDUCTION_HEIGHT / 2\
     and y != REDUCTION_HEIGHT and y != 0 \
     and x != REDUCTION_WIDTH  and y != 0 \
     and red[y][x] == 0 \

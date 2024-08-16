@@ -26,7 +26,7 @@ def findTriangles(image):
   green = cv2.inRange(imageHSL, (0, 0, 60), (360, 360, 180));
   red   = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
 
-  greenContours, hierarchy = cv2.findContours(green, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  greenContours, hierarchy = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
   # redContours, _    = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
   image, greenX = positionContour(image, greenContours)
@@ -42,7 +42,7 @@ def positionContour(image, contours):
   for contour in contours:
     area = cv2.contourArea(contour)
 
-    if area > maxArea and area > 36000:
+    if area > maxArea and area > 18000:
       maxArea = area
       maxContour = contour
   

@@ -14,7 +14,7 @@ def removeSpectralHighlights(image, kernalSize):
 
 def generateMasks(image):
   imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-  green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 140))
+  green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
   red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
   gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
