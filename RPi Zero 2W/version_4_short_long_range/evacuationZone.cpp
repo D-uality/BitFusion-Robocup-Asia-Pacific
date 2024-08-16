@@ -141,10 +141,25 @@ void grabSequence() {
   clawIncrement(1800, 2);
 
   do {
+    Serial.print("Moving back (F)");
     run(-150, -150);
     readToF(0);
     Serial.println();
-  } while(distancesToF[0] < 300);
+  } while(distancesToF[0] < 350);
+  
+  do {
+    Serial.print("Moving back (L)");
+    run(-150, -110);
+    readToF(1);
+    Serial.println();
+  } while(distancesToF[1] < 350);
+  
+  do {
+    Serial.print("Moving back (R)");
+    run(-110, -150);
+    readToF(2);
+    Serial.println();
+  } while(distancesToF[2] < 350);
 
   run(0, 0);
 
@@ -176,6 +191,11 @@ void findTriangle() {
     Serial.println();
   } while(triangleAverage > 2000);
 
+  run(0, 0);
+  while(com.available() != 0) { com.read(); }
+  while(com.available() == 0) { }
+  comUpdate();
+
   do {
     Serial.print("    Aligning(LR)");
 
@@ -187,6 +207,11 @@ void findTriangle() {
 
     Serial.println();
   } while(triangleX > 0);
+
+  run(0, 0);
+  while(com.available() != 0) { com.read(); }
+  while(com.available() == 0) { }
+  comUpdate();
   
   do {
     Serial.print("    Aligning(LL)");
@@ -201,16 +226,18 @@ void findTriangle() {
   } while(triangleX < 0);
 
   do {
+    Serial.print("Moving Closer");
     run(200, 200);
     readToF(0);
     Serial.println();
-  } while(distancesToF[0] > 300);
+  } while(distancesToF[0] > 320);
   
   do {
+    Serial.print("Moving Further");
     run(-200, -200);
     readToF(0);
     Serial.println();
-  } while(distancesToF[0] < 301);
+  } while(distancesToF[0] < 320);
 
   while(com.available() != 0) { com.read(); }
   while(com.available() == 0) { }
@@ -227,7 +254,16 @@ void findTriangle() {
 
     Serial.println();
   } while(triangleX > 0);
+
+  run(0, 0);
+  while(com.available() != 0) { com.read(); }
+  while(com.available() == 0) { }
+  comUpdate();
   
+  unsigned long start = millis();
+  unsigned long turnTime = 200;
+  unsigned long waitTime = turnTime + 500;
+
   do {
     Serial.print("    Aligning(SL)");
 
@@ -235,7 +271,9 @@ void findTriangle() {
     comUpdate();
     triangleX = triangleType == 0 ? greenX : redX;
 
-    run(-110, 110);
+    if(millis() - start < 200)            run(-100, 100);
+    else if (millis() - start < waitTime) run(0, 0);
+    else                                  start = millis();
 
     Serial.println();
   } while(triangleX < 0);
@@ -254,7 +292,7 @@ void dropSequence() {
   run(0, 0);
 
   clawIncrement(1300, 1);
-  delay(500);                    
+  delay(500);
   clawIncrement(2500, 1);
 
   run(0, 0, 1000);
