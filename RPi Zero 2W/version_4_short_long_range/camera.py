@@ -13,7 +13,7 @@ from victimType import *
 from presenceCheck import *
 
 camera = Picamera2()
-Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=1, hflip=1))
+Configuration = camera.create_preview_configuration(main={"format": "RGB888", "size": (WIDTH, HEIGHT)}, transform = Transform(vflip=0, hflip=0))
 camera.set_controls({"AfMode":controls.AfModeEnum.Continuous})
 camera.configure(Configuration)
 camera.start()

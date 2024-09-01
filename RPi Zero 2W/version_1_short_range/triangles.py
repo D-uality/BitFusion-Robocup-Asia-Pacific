@@ -1,8 +1,10 @@
-from config import *
 import cv2
 import numpy as np
 import random
 import math
+
+WIDTH  = 480
+HEIGHT = 480
 
 def findTriangles(image, green, red):
   greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

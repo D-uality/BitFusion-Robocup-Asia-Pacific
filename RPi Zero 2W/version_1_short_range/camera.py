@@ -7,6 +7,7 @@ import sys
 import serial
 import time
 from camera_helper import *
+from triangles import *
 
 WIDTH  = 480
 HEIGHT = 480
@@ -78,52 +79,6 @@ previousCircles = [(0, 0, 0)]
 def convertStringToBytes(message):
   return list(map(ord, message))
 
-def findTriangles(image):
-  output = image.copy()
-  imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-
-  green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
-  greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-  red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
-  redContours, _ = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-  maxGreenArea, maxRedArea = 0, 0
-  largestGreenContour, largestRedContour = None, None
-  greenMaxX, greenMinX, redMaxX, redMinX = 0, WIDTH, 0, WIDTH
-  greenX, redX = 0, 0
-
-  for greenContour in greenContours:
-    greenArea = cv2.contourArea(greenContour)
-    if greenArea > maxGreenArea and greenArea > 3000:
-      maxGreenArea = greenArea
-      largestGreenContour = greenContour
-
-  if largestGreenContour is not None:
-    cv2.drawContours(output, largestGreenContour, -1, (255, 0, 0), 3)
-
-    for point in largestGreenContour:
-      greenMaxX = max(greenMaxX, point[0][0])
-      greenMinX = min(greenMinX, point[0][0])
-      
-    greenX = int((greenMaxX + greenMinX) / 2)
-
-  for redContour in redContours:
-    redArea = cv2.contourArea(redContour)
-    if redArea > maxRedArea and redArea > 12000:
-      maxRedArea = redArea
-      largestRedContour = redContour
-
-  if largestRedContour is not None:
-    cv2.drawContours(output, largestRedContour, -1, (0, 255, 0), 2)
-
-    for point in largestRedContour:
-      redMaxX = max(redMaxX, point[0][0])
-      redMinX = min(redMinX, point[0][0])
-
-    redX = int((redMaxX + redMinX) / 2)
-
-  return output, greenX, redX
-
 def transmitData(circle, greenX, redX, victimType):
   currentTries, maximumTries = 0, 7
 
@@ -155,14 +110,18 @@ try:
     circles, circleImage = findVictims(highlightlessImage, dp=1.5, minDist=100, param1=100, param2=30, minRadius=40, maxRadius=150)
     matchingCircle, matchingImage = matchVictims(circles, 100, highlightlessImage)
 
-    triangles, greenX, redX = findTriangles(highlightlessImage)
+    imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+    green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
+    red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    triangles, greenX, redX = findTriangles(highlightlessImage, green, red)
     victimType = typeCheck(matchingCircle, highlightlessImage, 10)
     transmitData(matchingCircle, greenX, redX, victimType)
 
     # cv2.imshow("Image", image)
     # cv2.imshow("Highlightless", highlightlessImage)
     # cv2.imshow("Circles", circleImage)
-    # cv2.imshow("Matching", matchingImage)
+    cv2.imshow("Matching", matchingImage)
     # cv2.imshow("Triangles", triangles)
     # cv2.moveWindow("Image", 500, 0)
     # cv2.moveWindow("Highlightless", 500, 480-imageCutoff)
