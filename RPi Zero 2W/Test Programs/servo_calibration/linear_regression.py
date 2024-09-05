@@ -2,11 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
+# Bot Left
+# frequencies = np.array([-400, -300, -200, -150, 150, 200, 300, 400])
+# times = np.array([-6, -8.88, -16.67, -30.54, 26.03, 14.89, 8.22, 5.73])
+
+# Top Left
+# frequencies = np.array([-400, -300, -200, -150, 150, 200, 300, 400])
+# times = np.array([-5.01, -6.9, -11.38, -17.09, 16.91, 11.12, 6.79, 5])
+
+# Top Right
+# frequencies = np.array([-400, -300, -200, -150, 150, 200, 300, 400])
+# times = np.array([-5.66, -8.06, -14.61, -24.69, 23.27, 13.38, 7.64, 5.32])
+
+# Bot Right
 frequencies = np.array([-400, -300, -200, -150, 150, 200, 300, 400])
-times = np.array([-6, -8.88, -16.67, -30.54, 26.03, 14.89, 8.22, 5.73])
+times = np.array([-5.85, -8.09, -14.51, -24.96, 20.79, 12.85, 7.36, 5.31])
 
 # Calculat the angular speed, omega = 10*pi / T; T is the time taken for 5 rotations
-omega = 10*np.pi / times
+omega = 10 * np.pi / times
 
 # Becase we are trying to find a function that returns a corresponding frequency, inverse
 frequencies, omega = omega, frequencies
@@ -56,8 +69,8 @@ ax[0].plot(XnegativeExtended, negativeOmegaExtendedPredicted, color='red', label
 ax[0].set_title('Angular Speed vs. Negative PWM Frequencies')
 ax[0].set_xlabel('Angular Frequency (INPUT)')
 ax[0].set_ylabel('Corresponding PWM Frequency (OUTPUT)')
-ax[0].axhline(0, color='black',linewidth=0.5)
-ax[0].axvline(0, color='black',linewidth=0.5)
+ax[0].axhline(0, color='black',linewidth=1.5)
+ax[0].axvline(0, color='black',linewidth=1.5)
 ax[0].grid(True)
 ax[0].legend()
 
@@ -66,6 +79,8 @@ ax[1].scatter(posititiveFrequencies, positiveOmega, color='blue', label='Origina
 ax[1].plot(XpositiveExtended, positiveOmegaExtendedPredicted, color='red', label='Fitted line')
 ax[1].set_xlabel('Angular Frequency (INPUT)')
 ax[1].set_ylabel('Corresponding PWM Frequency (OUTPUT)')
+ax[1].axhline(0, color='black',linewidth=1.5)
+ax[1].axvline(0, color='black',linewidth=1.5)
 ax[1].grid(True)
 ax[1].legend()
 
