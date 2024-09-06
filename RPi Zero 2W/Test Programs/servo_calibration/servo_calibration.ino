@@ -44,7 +44,7 @@ void setup() {
 
 void loop() {
   Serial.println("Bot Left, Linear Test");
-  run(200, 200);
+  run(300, 300);
 
   // for(int i=0; i<600; i++) {
   //   run(i, 0);

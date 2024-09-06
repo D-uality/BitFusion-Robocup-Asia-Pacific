@@ -1,0 +1,8 @@
+SSH = True
+
+WIDTH, HEIGHT = 480, 480
+FLIP = False
+
+AUTOFOCUS = True
+
+CROP_MIN, CROP_MAX = 10, HEIGHT - 10
