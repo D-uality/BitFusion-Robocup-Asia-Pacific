@@ -10,7 +10,7 @@ def removeSpectralHighlights(image, kernalSize):
   
   image = cv2.inpaint(image, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
 
-  return image
+  return image, mask
 
 def generateMasks(image):
   imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
