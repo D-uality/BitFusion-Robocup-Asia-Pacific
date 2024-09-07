@@ -82,7 +82,7 @@ def convertStringToBytes(message):
 def transmitData(circle, greenX, redX, victimType):
   currentTries, maximumTries = 0, 7
 
-  data = str(circle[0]) + "," + str(circle[1]) + "," + str(circle[2]) + "," + str(greenX) + "," + str(redX) + "," + str(victimType)
+  data = "0" + str(circle[0]) + "," + str(circle[1]) + "," + str(circle[2]) + "," + str(greenX) + "," + str(redX) + "," + str(victimType)
   print(data, end="    ")
 
   while currentTries < maximumTries:
@@ -111,15 +111,17 @@ try:
     matchingCircle, matchingImage = matchVictims(circles, 100, highlightlessImage)
 
     imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-    green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
-    red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
+    # green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
+    green = cv2.inRange(imageHSL, (0, 0, 50), (160, 220, 200))
+    # red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
+    red = cv2.inRange(imageHSL, (0, 30, 40), (180, 360, 360))
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     triangles, greenX, redX = findTriangles(highlightlessImage, green, red)
     victimType = typeCheck(matchingCircle, highlightlessImage, 10)
     transmitData(matchingCircle, greenX, redX, victimType)
 
     # cv2.imshow("Image", image)
-    # cv2.imshow("Highlightless", highlightlessImage)
+    cv2.imshow("Highlightless", highlightlessImage)
     # cv2.imshow("Circles", circleImage)
     cv2.imshow("Matching", matchingImage)
     # cv2.imshow("Triangles", triangles)
