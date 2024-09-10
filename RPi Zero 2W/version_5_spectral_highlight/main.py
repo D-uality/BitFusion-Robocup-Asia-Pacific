@@ -24,7 +24,7 @@ try:
 
     x, y, r, greenX, redX, victimType = -1, -1, -1, -1, -1, -1
 
-    image, spectralHighlightMask = removeSpectralHighlights(image, 9)
+    image, spectralHighlightMask = removeSpectralHighlights(image, 13)
     imageHSL, green, red, gray = generateMasks(image)
 
     # cirlces, image = findVictims(image, gray, green, red)
