@@ -24,11 +24,11 @@ try:
 
     x, y, r, greenX, redX, victimType = -1, -1, -1, -1, -1, -1
 
-    image, spectralHighlightMask = removeSpectralHighlights(image, 13)
-    imageHSL, green, red, gray = generateMasks(image)
+    image, spectralHighlightMask = findSpectralHighlights(image, 51)
+    imageHSL, green, red, black = generateMasks(image)
 
-    # cirlces, image = findVictims(image, gray, green, red)
-    x, y = findVictims(spectralHighlightMask, image)
+    xLive, yLive = findLiveVictims(spectralHighlightMask, image)
+    xDead, yDead = findDeadVictims(black, image)
 
     data = " " + str(x) + " " + str(y) + " "
     print(f"Sending {data}", end="    ")
