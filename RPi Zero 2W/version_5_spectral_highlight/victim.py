@@ -40,7 +40,7 @@ def findLiveVictims(spectralHighlightMask, image):
 
   return xAverage, yAverage
 
-def getMaxAreaContour(contours, min_area=5000):
+def getMaxAreaContour(contours, min_area=1000):
   maxArea = 0
   maxContour = None
 

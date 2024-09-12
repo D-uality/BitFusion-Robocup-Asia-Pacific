@@ -9,6 +9,7 @@ from config import *
 from camera import *
 from imageTransform import *
 from victim import *
+from triangles import *
 
 com = serial.Serial('/dev/ttyS0', 115200, timeout=1)
 
@@ -27,10 +28,12 @@ try:
     image, spectralHighlightMask = findSpectralHighlights(image, 51)
     imageHSL, green, red, black = generateMasks(image)
 
+    image, greenX, redX = findTriangles(image, green, red)
+
     xLive, yLive = findLiveVictims(spectralHighlightMask, image)
     xDead, yDead = findDeadVictims(black, image)
 
-    data = " " + str(x) + " " + str(y) + " "
+    data = " " + str(xLive) + " " + str(yLive) + " " + str(xDead) + " " + str(yDead) + " " + str(greenX) + " " + str(redX) 
     print(f"Sending {data}", end="    ")
     com.write(convertStringToBytes(data))
 

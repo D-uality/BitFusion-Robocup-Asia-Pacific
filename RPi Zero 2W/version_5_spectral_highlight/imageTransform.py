@@ -14,6 +14,6 @@ def generateMasks(image):
   imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
   green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
   red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
-  black = cv2.inRange(image, (0, 0, 0), (50, 50, 50))
+  black = cv2.inRange(image, (0, 0, 0), (30, 30, 70))
 
   return imageHSL, green, red, black
