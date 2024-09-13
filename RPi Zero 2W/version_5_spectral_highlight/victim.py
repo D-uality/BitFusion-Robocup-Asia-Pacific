@@ -51,30 +51,16 @@ def getMaxAreaContour(contours, min_area=1000):
       maxContour = contour
   return maxContour
 
-def findDeadVictims(black, image):
+def findDeadVictims(gray, image):
+  blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+  _, threshold = cv2.threshold(blurred, 30, 80, cv2.THRESH_BINARY_INV)
+  circles = cv2.HoughCircles(threshold, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=100, param2=23, minRadius=10, maxRadius=100)
 
-  cv2.imshow("black", black)
-  contours, _ = cv2.findContours(black, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  if circles is None:
+    return 0, 0
 
-  xMin, xMax, xAverage = WIDTH , 0, -1
-  yMin, yMax, yAverage = HEIGHT, 0, -1
+  circles = np.round(circles[0, :]).astype("int")
+  for (x, y, r) in circles:
+    cv2.circle(image, (x, y), r, (0, 255, 0), 2)
 
-  contour = getMaxAreaContour(contours)
-
-  if contour is None:
-    return xAverage, yAverage
-
-  for point in contour:
-    if point[0][1] < HEIGHT / 2:
-      yMin = min(yMin, point[0][1])
-      yMax = max(yMax, point[0][1])
-      xMin = min(xMin, point[0][0])
-      xMax = max(xMax, point[0][0])
-
-    xAverage = int((xMin + xMax) / 2)
-    yAverage = int((yMin + yMax) / 2)
-
-  cv2.drawContours(image, contour, -1, (0, 255, 0), 3)
-  cv2.circle(image, (xAverage, yAverage), 1, (255, 0, 0), 2)
-
-  return xAverage, yAverage
+    return x, y

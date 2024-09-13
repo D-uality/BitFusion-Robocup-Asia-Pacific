@@ -21,24 +21,27 @@ try:
     timeStart = time.time()
 
     image = camera.capture_array()
+    imageClean = image.copy()
     image = image[CROP_MIN:CROP_MAX][:]
 
     x, y, r, greenX, redX, victimType = -1, -1, -1, -1, -1, -1
 
     image, spectralHighlightMask = findSpectralHighlights(image, 51)
-    imageHSL, green, red, black = generateMasks(image)
+    imageHSL, green, red, gray = generateMasks(image)
 
     image, greenX, redX = findTriangles(image, green, red)
 
     xLive, yLive = findLiveVictims(spectralHighlightMask, image)
-    xDead, yDead = findDeadVictims(black, image)
+    xDead, yDead = findDeadVictims(gray, image)
 
     data = " " + str(xLive) + " " + str(yLive) + " " + str(xDead) + " " + str(yDead) + " " + str(greenX) + " " + str(redX) 
     print(f"Sending {data}", end="    ")
     com.write(convertStringToBytes(data))
 
-    cv2.imshow("image", image)
-    cv2.imshow("Spectral Highlights", spectralHighlightMask)
+    if SSH:
+      cv2.imshow("image", image)
+      cv2.imshow("clean", imageClean)
+      cv2.imshow("Spectral Highlights", spectralHighlightMask)
 
     print(f"|    {(1 / (time.time() - timeStart)):.2f} pc/s")
 
