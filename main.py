@@ -24,26 +24,26 @@ try:
     imageClean = image.copy()
     image = image[CROP_MIN:CROP_MAX][:]
 
-    x, y, r, greenX, redX, victimType = 0, 0, 0, 0, 0, 0
-
-    image, spectralHighlightMask = findSpectralHighlights(image, 51)
+    image, spectralHighlightMask = findSpectralHighlights(image, 10)
     rgb_image, green, red, black = generateMasks(image)
 
-    image, greenX, redX = findTriangles(image, green, red)
+    xLive, yLive = findLiveVictims(spectralHighlightMask, rgb_image)
+    xDead, yDead = findDeadVictims(black, rgb_image)
 
-    xLive, yLive = findLiveVictims(spectralHighlightMask, image)
-    xDead, yDead = findDeadVictims(black, image)
+    rgb_image, greenX, redX = findTriangles(rgb_image, green, red, xDead, xLive)
 
-    data = "0" + str(xLive) + " " + str(yLive) + " " + str(xDead) + " " + str(yDead) + " " + str(greenX) + " " + str(redX) 
+    data = "0" + str(xLive) + " " + str(xDead) + " " + str(greenX) + " " + str(redX) 
     print(f"Sending {data}", end="    ")
     com.write(convertStringToBytes(data))
 
     if SSH:
-      cv2.imshow("image", image)
+      show_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+      cv2.imshow("image", show_image)
+      cv2.imshow("clean", imageClean)
       cv2.imshow("black", black)
       cv2.imshow("green", green)
       cv2.imshow("red", red)
-      
+
     print(f"|    {(1 / (time.time() - timeStart)):.2f} pc/s")
 
 except KeyboardInterrupt:

@@ -4,13 +4,15 @@ import numpy as np
 import random
 import math
 
-def findTriangles(image, green, red):
+def findTriangles(image, green, red, xDead, xLive):
+  greenX, redX = 0, 0
+  
   greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
   redContours, _   = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-  image, greenX, greenY = positionContour(image, greenContours)
-  image, redX, _        = positionContour(image, redContours)
-  greenX = verifyGreen(greenX, greenY, green)
+  image, greenX, greenY = positionContour(image, greenContours, xDead, xLive)
+  image, redX, _        = positionContour(image, redContours, xDead, xLive)
+  # greenX = verifyGreen(greenX, greenY, green)
   
   return image, greenX, redX
 
@@ -46,24 +48,28 @@ def verifyGreen(greenX, greenY, green):
   else:
     return 0
 
-def positionContour(image, contours):
+def positionContour(image, contours, xDead, xLive):
   maxContour = getMaxAreaContour(contours)
 
   if maxContour is None:
     return image, 0, 0
 
-  cv2.drawContours(image, maxContour, -1, (255, 0, 0), 3)
+  cv2.drawContours(image, maxContour, -1, (0, 0, 255), 3)
 
   approx = approximateContour(maxContour)
-  cv2.drawContours(image, [approx], -1, (255, 0, 0), 3)
+  cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
 
-  if len(approx) in [3, 4]:
+  # print(len(approx))
+  if len(approx) in [3, 4, 5]:
     points = [approx[i][0] for i in range(len(approx))]
     angles = calculateAngles(points)
 
     if any(isCloseTo90(angle) for angle in angles):
       x, y = getContourCenter(maxContour)
       return image, x, y
+  elif xDead != 0 or xLive != 0:
+    x, y = getContourCenter(maxContour)
+    return image, x, y
 
   return image, 0, 0
 
