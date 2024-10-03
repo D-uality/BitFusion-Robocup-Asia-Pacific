@@ -11,14 +11,9 @@ def findSpectralHighlights(image, kernalSize):
   return image, mask
 
 def generateMasks(image):
-  rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-  blurred_image = cv2.GaussianBlur(rgb_image, (15, 15), 0) 
-  # far_range_green = cv2.inRange(blurred_image, (5, 25, 15), (40, 80, 50))
-  # close_range_green = cv2.inRange(blurred_image, (40, 80, 50), (100, 180, 110))
-  # green = cv2.bitwise_or(close_range_green, far_range_green)
-  green = cv2.inRange(blurred_image, (10, 40, 20), (50, 120, 80))
-  red = cv2.inRange(blurred_image, (50, 0, 0), (255, 50, 50))
-  black = cv2.inRange(blurred_image, (0, 0, 0), (40, 40, 40))
-  yellow = cv2.inRange(blurred_image, (65, 55, 0), (200, 140, 30))
-  
-  return blurred_image, green, red, black, yellow
+  imageHSL = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+  green = cv2.inRange(imageHSL, (0, 0, 80), (360, 360, 160))
+  red = cv2.inRange(imageHSL, (0, 0, 160), (360, 360, 360))
+  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+  return imageHSL, green, red, gray

@@ -1,4 +1,4 @@
-import cv2 
+import cv2
 import numpy as np
 from picamera2 import Picamera2, Preview
 from libcamera import Transform, controls
@@ -9,10 +9,8 @@ from config import *
 def findLiveVictims(spectralHighlightMask, image):
   contours, _ = cv2.findContours(spectralHighlightMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-  xMin, xMax, xAverage = WIDTH, 0, 0
-  yMin, yMax, yAverage = HEIGHT, 0, 0
-
-  contours = validateContours(contours, 0, 100, 5000)
+  xMin, xMax, xAverage = WIDTH , 0, -1
+  yMin, yMax, yAverage = HEIGHT, 0, -1
 
   if not contours:
     return xAverage, yAverage
@@ -34,70 +32,35 @@ def findLiveVictims(spectralHighlightMask, image):
       xMin = min(xMin, point[0][0])
       xMax = max(xMax, point[0][0])
 
-  xAverage = int((xMin + xMax) / 2)
-  yAverage = int((yMin + yMax) / 2)
+    xAverage = int((xMin + xMax) / 2)
+    yAverage = int((yMin + yMax) / 2)
 
   cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
   cv2.circle(image, (xAverage, yAverage), 1, (255, 0, 0), 2)
 
   return xAverage, yAverage
 
-def validateContours(contours, yThreshold, minArea, maxArea):
-  approvedContours = []
+def getMaxAreaContour(contours, min_area=1000):
+  maxArea = 0
+  maxContour = None
 
   for contour in contours:
-    yCheck = True
-
-    for point in contour:
-      if point[0][1] < yThreshold:
-        yCheck = False
-
     area = cv2.contourArea(contour)
-    
-    if yCheck and area > minArea and area < maxArea:
-      # print(area)
-      approvedContours.append(contour)
+    if area > maxArea and area > min_area:
+      maxArea = area
+      maxContour = contour
+  return maxContour
 
-  return approvedContours
+def findDeadVictims(gray, image):
+  blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+  _, threshold = cv2.threshold(blurred, 30, 80, cv2.THRESH_BINARY_INV)
+  circles = cv2.HoughCircles(threshold, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=100, param2=23, minRadius=10, maxRadius=100)
 
-def isCircle(contour, circularity_threshold=0.5):
-  perimeter = cv2.arcLength(contour, True)
-  area = cv2.contourArea(contour)
+  if circles is None:
+    return 0, 0
 
-  if perimeter == 0:
-    return False
+  circles = np.round(circles[0, :]).astype("int")
+  for (x, y, r) in circles:
+    cv2.circle(image, (x, y), r, (0, 255, 0), 2)
 
-  circularity = (4 * np.pi * area) / (perimeter ** 2)
-  return circularity > circularity_threshold
-
-def findDeadVictims(black, image):
-  contours, _ = cv2.findContours(black, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-  xMin, xMax, xAverage = WIDTH, 0, 0
-  yMin, yMax, yAverage = HEIGHT, 0, 0
-
-  contours = validateContours(contours, 0, 500, 150000)
-
-  if contours is None:
-    return xAverage, yAverage
-  
-  for contour in contours:
-    if not isCircle(contour):
-      continue
-    
-    print(f"circle true", end="    ")
-
-    for point in contour:
-      if point[0][1] < HEIGHT / 2:
-        yMin = min(yMin, point[0][1])
-        yMax = max(yMax, point[0][1])
-        xMin = min(xMin, point[0][0])
-        xMax = max(xMax, point[0][0])
-
-    xAverage = int((xMin + xMax) / 2)
-    yAverage = int((yMin + yMax) / 2)
-
-    cv2.drawContours(image, contour, -1, (0, 255, 0), 3)
-    cv2.circle(image, (xAverage, yAverage), 1, (255, 0, 0), 2)
-
-  return xAverage, yAverage
+    return x, y
