@@ -19,5 +19,6 @@ def generateMasks(image):
   green = cv2.inRange(blurred_image, (10, 40, 20), (50, 120, 80))
   red = cv2.inRange(blurred_image, (50, 0, 0), (255, 50, 50))
   black = cv2.inRange(blurred_image, (0, 0, 0), (40, 40, 40))
-
-  return blurred_image, green, red, black
+  yellow = cv2.inRange(blurred_image, (65, 55, 0), (200, 140, 30))
+  
+  return blurred_image, green, red, black, yellow
