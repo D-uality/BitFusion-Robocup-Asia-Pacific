@@ -10,6 +10,7 @@ from camera import *
 from imageTransform import *
 from victim import *
 from triangles import *
+from presence import *
 
 com = serial.Serial('/dev/ttyS0', 115200, timeout=1)
 
@@ -24,24 +25,26 @@ try:
     imageClean = image.copy()
     image = image[CROP_MIN:CROP_MAX][:]
 
-    x, y, r, greenX, redX, victimType = -1, -1, -1, -1, -1, -1
+    image, spectralHighlightMask = findSpectralHighlights(image, 10)
+    rgb_image, green, red, black, yellow = generateMasks(image)
 
-    image, spectralHighlightMask = findSpectralHighlights(image, 51)
-    imageHSL, green, red, gray = generateMasks(image)
+    xLive, yLive = findLiveVictims(spectralHighlightMask, rgb_image)
+    xDead, yDead = findDeadVictims(black, rgb_image)
 
-    image, greenX, redX = findTriangles(image, green, red)
+    rgb_image, greenX, redX = findTriangles(rgb_image, green, red, xDead, xLive)
+    presence = presenceCheck(rgb_image, yellow, black)
 
-    xLive, yLive = findLiveVictims(spectralHighlightMask, image)
-    xDead, yDead = findDeadVictims(gray, image)
-
-    data = " " + str(xLive) + " " + str(yLive) + " " + str(xDead) + " " + str(yDead) + " " + str(greenX) + " " + str(redX) 
+    data = "0" + str(xLive) + " " + str(xDead) + " " + str(greenX) + " " + str(redX)  + " " + str(presence)
     print(f"Sending {data}", end="    ")
     com.write(convertStringToBytes(data))
 
     if SSH:
-      cv2.imshow("image", image)
+      show_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+      cv2.imshow("image", show_image)
       cv2.imshow("clean", imageClean)
-      cv2.imshow("Spectral Highlights", spectralHighlightMask)
+      cv2.imshow("black", black)
+      cv2.imshow("green", green)
+      cv2.imshow("red", red)
 
     print(f"|    {(1 / (time.time() - timeStart)):.2f} pc/s")
 
