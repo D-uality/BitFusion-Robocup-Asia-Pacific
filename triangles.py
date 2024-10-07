@@ -35,8 +35,6 @@ def isCircle(contour, circularity_threshold=0.7):
 
   circularity = (4 * np.pi * area) / (perimeter ** 2)
 
-  print(circularity)
-
   if(circularity > circularity_threshold): return True
   else: return False
 

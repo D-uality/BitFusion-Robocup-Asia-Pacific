@@ -12,7 +12,7 @@ def findLiveVictims(spectralHighlightMask, image):
   xMin, xMax, xAverage = WIDTH, 0, 0
   yMin, yMax, yAverage = HEIGHT, 0, 0
 
-  contours = validateContours(contours, 0, 100, 5000)
+  contours = validateContours(contours, int((HEIGHT-CROP_MIN) / 2 + 50), 100, 5000)
 
   if not contours:
     return xAverage, yAverage
