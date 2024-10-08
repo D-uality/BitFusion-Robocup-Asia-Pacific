@@ -12,7 +12,7 @@ def findLiveVictims(spectralHighlightMask, image):
   xMin, xMax, xAverage = WIDTH, 0, 0
   yMin, yMax, yAverage = HEIGHT, 0, 0
 
-  contours = validateContours(contours, 0, 100, 5000)
+  contours = validateContours(contours, int((HEIGHT-CROP_MIN) / 2 + 50), 100, 5000)
 
   if not contours:
     return xAverage, yAverage
@@ -49,13 +49,12 @@ def validateContours(contours, yThreshold, minArea, maxArea):
     yCheck = True
 
     for point in contour:
-      if point[0][1] < yThreshold:
+      if point[0][1] > yThreshold:
         yCheck = False
 
     area = cv2.contourArea(contour)
     
     if yCheck and area > minArea and area < maxArea:
-      # print(area)
       approvedContours.append(contour)
 
   return approvedContours

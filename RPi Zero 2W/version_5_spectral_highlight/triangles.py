@@ -8,6 +8,7 @@ def findTriangles(image, green, red, xDead, xLive):
   greenX, redX = 0, 0
   
   greenContours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+  greenContours = verifyGreenContours(greenContours)
   redContours, _   = cv2.findContours(red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
   image, greenX, greenY = positionContour(image, greenContours, xDead, xLive)
@@ -15,6 +16,27 @@ def findTriangles(image, green, red, xDead, xLive):
   # greenX = verifyGreen(greenX, greenY, green)
   
   return image, greenX, redX
+
+def verifyGreenContours(contours):
+  approvedContours = []
+
+  for contour in contours:
+    if isCircle(contour) == True: pass
+    else: approvedContours.append(contour)
+  
+  return approvedContours
+
+def isCircle(contour, circularity_threshold=0.7):
+  perimeter = cv2.arcLength(contour, True)
+  area = cv2.contourArea(contour)
+
+  if perimeter == 0:
+    return False
+
+  circularity = (4 * np.pi * area) / (perimeter ** 2)
+
+  if(circularity > circularity_threshold): return True
+  else: return False
 
 def generateRandomPoints(xCenter, yCenter, radius, numberOfPoints):
   points = []
@@ -33,20 +55,6 @@ def generateRandomPoints(xCenter, yCenter, radius, numberOfPoints):
     cycles += 1
 
   return points
-
-def verifyGreen(greenX, greenY, green):
-  points = generateRandomPoints(greenX, greenY, 7, 25)
-
-  blackCount = 0
-  for point in points:
-    pixel = green[point[1]][point[0]]
-    if pixel == 0:
-      blackCount += 1
-
-  if blackCount < 14:
-    return greenX
-  else:
-    return 0
 
 def positionContour(image, contours, xDead, xLive):
   maxContour = getMaxAreaContour(contours)
@@ -76,11 +84,14 @@ def positionContour(image, contours, xDead, xLive):
 def getMaxAreaContour(contours, min_area=6000):
   maxArea = 0
   maxContour = None
+
   for contour in contours:
     area = cv2.contourArea(contour)
+
     if area > maxArea and area > min_area:
       maxArea = area
       maxContour = contour
+
   return maxContour
 
 def approximateContour(contour, epsilon_factor=0.04):

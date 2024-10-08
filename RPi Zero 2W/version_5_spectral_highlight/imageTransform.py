@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 def findSpectralHighlights(image, kernalSize):
-  mask = cv2.inRange(image, (200, 200, 200), (255, 255, 255))
+  mask = cv2.inRange(image, (230, 230, 230), (255, 255, 255))
   
   kernel = np.ones((kernalSize, kernalSize), np.uint8)
   mask = cv2.dilate(mask, kernel, iterations=1)
@@ -17,7 +17,7 @@ def generateMasks(image):
   # close_range_green = cv2.inRange(blurred_image, (40, 80, 50), (100, 180, 110))
   # green = cv2.bitwise_or(close_range_green, far_range_green)
   green = cv2.inRange(blurred_image, (10, 40, 20), (50, 120, 80))
-  red = cv2.inRange(blurred_image, (50, 0, 0), (255, 50, 50))
+  red = cv2.inRange(blurred_image, (60, 0, 0), (255, 40, 40))
   black = cv2.inRange(blurred_image, (0, 0, 0), (40, 40, 40))
   yellow = cv2.inRange(blurred_image, (65, 55, 0), (200, 140, 30))
   
