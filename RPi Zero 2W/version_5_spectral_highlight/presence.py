@@ -28,12 +28,24 @@ def presenceCheck(image, yellow, black):
   if yellowContours is None:
     return 0
 
+  validContours = []
+
+  for contour in yellowContours:
+    for point in contour:
+      if point[0][0] < int(WIDTH / 2 + 100) and point[0][0] > int(WIDTH / 2 - 100):
+        pass
+      else:
+        validContours.append(contour)
+
+  if len(validContours) == 0:
+    return 0
+
   maxArea = 0
   maxContour = None
   yMin, yMax = HEIGHT, 0
   yAverage = 0
 
-  for contour in yellowContours:
+  for contour in validContours:
     area = cv2.contourArea(contour)
 
     if area > maxArea:
